@@ -2,23 +2,22 @@ const User = require("../models/userModel");
 const validate = require('../utils/validator');
 const bcrypt = require('bcrypt');
 const jwt =  require('jsonwebtoken');
+const redisClient = require("../config/redis");
 
 
 const register = async(req, res) => {
     
     try{
         const errors = validate(req.body);
-        if(errors.length > 0){
-           return res.status(400).json({errors});
-        }
         
         const { firstname, emailID, password} = req.body;
         req.body.password = await bcrypt.hash(password, 10);
 
         const user = await User.create(req.body);
+        
         // ==== Token =====
         const token = jwt.sign({_id:user._id, emailID: emailID}, process.env.JWT_KEY, {expiresIn: 60*60});
-        res.cookie('jwt', token, {
+        res.cookie('token', token, {
             maxAge: 60*60*1000,
             httpOnly: true,
             secure: process.env.NODE_ENV,
@@ -26,7 +25,6 @@ const register = async(req, res) => {
         res.status(201).send("User register Successfully");
         
     }
-
     catch(err){
         res.status(400).json({ error: "Registration failed" }); 
         console.error(err); 
@@ -55,12 +53,12 @@ const login = async (req, res) => {
 
         const token = jwt.sign({_id:user._id, emailID: emailID}, process.env.JWT_KEY, {expiresIn: 60*60});
         
-        res.cookie("jwt", token, {
+        res.cookie("token", token, {
           maxAge: 60 * 60 * 1000,
           httpOnly: true,
-          secure: process.env.NODE_ENV,
+          secure: process.env.NODE_ENV = "production",
         });
-        res.status(201).send("User register Successfully");
+        res.status(201).send("login Successfully");
     }
     catch(err){
         res.status(401).send("Error:" +err);
@@ -68,3 +66,27 @@ const login = async (req, res) => {
 }
 
 
+const logout = async (req, res) => {
+          
+    try{
+        const {token} = req.cookies;
+        if (!token) return res.status(400).send("No token found");
+
+        const decoded = jwt.decode(token);
+        if(!decoded || !decoded.exp) return res.status(400).send("invaild token");
+
+        // === store token in radis blacklist ===
+        await redisClient.set(`blacklist:${token}`, 'true');
+        await redisClient.expireAt(`blacklist:${token}`, decoded.exp);
+        
+        // === clear cookies ===
+        res.cookie("token", "", { expires: new Date(0), httpOnly: true });
+        res.send("logged Out Successfully");
+    }
+    catch(err){
+        res.status(401).send("Error:"+err);
+    }
+}
+
+
+module.exports = {register, login, logout}
