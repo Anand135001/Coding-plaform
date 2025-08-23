@@ -12,11 +12,12 @@ const register = async(req, res) => {
         
         const { firstname, emailID, password} = req.body;
         req.body.password = await bcrypt.hash(password, 10);
+        req.body.role = 'user';
 
         const user = await User.create(req.body);
         
         // ==== Token =====
-        const token = jwt.sign({_id:user._id, emailID: emailID}, process.env.JWT_KEY, {expiresIn: 60*60});
+        const token = jwt.sign({_id:user._id, role:user.role}, process.env.JWT_KEY, {expiresIn: 60*60});
         res.cookie('token', token, {
             maxAge: 60*60*1000,
             httpOnly: true,
@@ -51,12 +52,12 @@ const login = async (req, res) => {
             throw new Error("invaild Credentials"); 
         }
 
-        const token = jwt.sign({_id:user._id, emailID: emailID}, process.env.JWT_KEY, {expiresIn: 60*60});
+        const token = jwt.sign({_id:user._id, role:user.role}, process.env.JWT_KEY, {expiresIn: 60*60});
         
         res.cookie("token", token, {
           maxAge: 60 * 60 * 1000,
           httpOnly: true,
-          secure: process.env.NODE_ENV = "production",
+          secure: process.env.NODE_ENV,
         });
         res.status(201).send("login Successfully");
     }
@@ -89,4 +90,33 @@ const logout = async (req, res) => {
 }
 
 
-module.exports = {register, login, logout}
+const adminRegister = async (req, res) => {
+     
+    try {
+      const errors = validate(req.body);
+
+      const { firstname, emailID, password } = req.body;
+      req.body.password = await bcrypt.hash(password, 10);
+      req.body.role = "admin";
+
+      const user = await User.create(req.body);
+
+      // ==== Token =====
+      const token = jwt.sign(
+        { _id: user._id, role: user.role },
+        process.env.JWT_KEY,
+        { expiresIn: 60 * 60 }
+      );
+      res.cookie("token", token, {
+        maxAge: 60 * 60 * 1000,
+        httpOnly: true,
+        secure: process.env.NODE_ENV,
+      });
+      res.status(201).send("User register Successfully");
+    } catch (err) {
+      res.status(400).json({ error: "Registration failed" });
+      console.error(err);
+    }
+}
+
+module.exports = {register, login, logout, adminRegister};
