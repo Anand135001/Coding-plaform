@@ -3,13 +3,16 @@ const app = express();
 const mainDatabase = require('./config/db');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
-const authRouter = require('./routes/userAuthRoute');
 const redisClient = require('./config/redis');
+const authRouter = require('./routes/userAuthRoute');
+const problemRouter = require('./routes/problemCreatorRoute');
 
 
 app.use(express.json());
 app.use(cookieParser());
+
 app.use('/user', authRouter);
+app.use('/problem', problemRouter);
 
 
 const IntializeConnection = async () => {

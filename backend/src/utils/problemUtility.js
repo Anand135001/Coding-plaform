@@ -43,5 +43,45 @@ return await fetchData();
 
 }
 
+const submitToken = async(resultToken) => {
 
-module.exports = {getlanguageById, submitBatch};
+    const options = {
+      method: "GET",
+      url: "https://judge0-ce.p.rapidapi.com/submissions/batch",
+      params: {
+        tokens: resultToken.join(","),
+        base64_encoded: "true",
+        fields: "*",
+      },
+      headers: {
+        "x-rapidapi-key": "649f3dcd47mshd0ff7cf4d54012dp14d803jsn7eba613d348a",
+        "x-rapidapi-host": "judge0-ce.p.rapidapi.com",
+      },
+    };
+
+    async function fetchData() {
+      try {
+        const response = await axios.request(options);
+        console.log(response.data);
+        return response.data;
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    while(true){
+        const result = await fetchData();
+        // === Is output under process === 
+        const IsrResultObtained = result.submissions.every((el) => el.status_id > 2);
+        
+        if(IsrResultObtained){
+            return result.submissions;
+        }
+        // === waiting for 1 sec before hitting API again ===
+        await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+}
+
+
+
+module.exports = {getlanguageById, submitBatch, submitToken};
