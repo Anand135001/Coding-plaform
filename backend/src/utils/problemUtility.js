@@ -18,7 +18,7 @@ const submitBatch = async(submissions) =>{
             method: "POST",
             url: "https://judge0-ce.p.rapidapi.com/submissions/batch",
             params: {
-            base64_encoded: "true",
+            base64_encoded: "false",
         },
         headers: {
             "x-rapidapi-key": "649f3dcd47mshd0ff7cf4d54012dp14d803jsn7eba613d348a",
@@ -33,7 +33,7 @@ const submitBatch = async(submissions) =>{
 async function fetchData() {
     try {
         const response = await axios.request(options);
-        console.log(response.data);
+        return response.data;
     } catch (error) {
         console.error(error);
     }
@@ -50,7 +50,7 @@ const submitToken = async(resultToken) => {
       url: "https://judge0-ce.p.rapidapi.com/submissions/batch",
       params: {
         tokens: resultToken.join(","),
-        base64_encoded: "true",
+        base64_encoded: "false",
         fields: "*",
       },
       headers: {
@@ -62,7 +62,6 @@ const submitToken = async(resultToken) => {
     async function fetchData() {
       try {
         const response = await axios.request(options);
-        console.log(response.data);
         return response.data;
       } catch (error) {
         console.error(error);
