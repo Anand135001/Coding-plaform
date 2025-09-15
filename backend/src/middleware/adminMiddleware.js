@@ -26,8 +26,7 @@ const adminMiddleware = async (req, res, next) => {
     if (!result) {
       throw new Error("User Does not exists");
     }
-
-    if(token.role != 'admin'){
+    if(result.role != 'admin'){
         throw new Error('Invaild token');
     }
 

@@ -51,7 +51,6 @@ const login = async (req, res) => {
         if(!match){
             throw new Error("invaild Credentials"); 
         }
-
         const token = jwt.sign({_id:user._id, role:user.role}, process.env.JWT_KEY, {expiresIn: 60*60});
         
         res.cookie("token", token, {

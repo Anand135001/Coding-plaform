@@ -35,7 +35,7 @@ const createProblem = async(req, res) => {
         const resultToken = submitResult.map((value) => value.token);
         // === submit tokens to judge 0 ===
         const testResult = await submitToken(resultToken);
-      
+         
         for(const test of testResult){
           if(test.status_id!=3){
             return res.status(400).send("Error occrued")
@@ -59,21 +59,3 @@ const createProblem = async(req, res) => {
 }
 
 module.exports = createProblem;
-
-
-// const submission = {
-//   "submissions": [
-//     {
-//       "language_id": 46,
-//       "source_code": "echo hello from Bash"
-//     },
-//     {
-//       "language_id": 71,
-//       "source_code": "print(\"hello from Python\")"
-//     },
-//     {
-//       "language_id": 72,
-//       "source_code": "puts(\"hello from Ruby\")"
-//     }
-//   ]
-// }
