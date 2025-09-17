@@ -58,4 +58,63 @@ const createProblem = async(req, res) => {
     }
 }
 
-module.exports = createProblem;
+const updateProblem = async (req,res) => {
+  
+  const {id} = req.params;
+  const {
+    title,
+    description,
+    difficulty,
+    tags,
+    visibleTestCases,
+    hiddenTestCases,
+    starterCode,
+    referenceSolution,
+    problemCreator,
+  } = req.body;
+
+  try{
+
+      if(!id){
+        return res.status(400).send("Invaild ID");
+      }
+      
+      const DsaProblem = await problem.findById(id);
+      if(DsaProblem){
+        return res.status(400).send("ID is not present");
+      }
+    
+      for (const { language, completeCode } of referenceSolution) {
+        const languageId = getlanguageById(language);
+
+        const submission = visibleTestCases.map((testcase) => ({
+          source_code: completeCode,
+          language_id: languageId,
+          stdin: testcase.input,
+          expected_output: testcase.output,
+        }));
+
+        const submitResult = await submitBatch(submission);
+        const resultToken = submitResult.map((value) => value.token);
+        const testResult = await submitToken(resultToken);
+
+        for (const test of testResult) {
+          if (test.status_id != 3) {
+            return res.status(400).send("Error occrued");
+          }
+        }
+      }
+      
+      // update problem in database 
+      const changedProblem = await problem.findByIdAndUpdate(id, {...req.body}, {runValidators: true, new:true});
+      
+      res.status(200).send(changedProblem);
+  }
+  catch(err){
+    res.status(404).send("Error", +err);
+  }
+}
+
+
+
+module.exports = {createProblem, updateProblem, deleteProblem, getProblem };
