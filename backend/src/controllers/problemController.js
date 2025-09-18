@@ -150,10 +150,29 @@ const getProblem = async (req, res) => {
       if(!findProblem){
         return res.status(400).send("Problem is Missing");
       }
+
+      res.status(200).send(findProblem);
    }
    catch(err){
       res.status(500).send("Error", +err);
    }
 }
 
-module.exports = {createProblem, updateProblem, deleteProblem, getProblem };
+const getAllProblem = async (req, res) => {
+
+  try{
+    const findAllProblem = await problem.findById({}).skip(10).limit(10);
+
+    if(findAllProblem. length == 0){
+      return res.status(400).send("Problem is Missing");
+    }
+
+    res.status(200).send(findAllProblem);
+  }
+  catch(err){
+    res.status(500).send("Error", +err);
+  }
+}
+
+
+module.exports = {createProblem, updateProblem, deleteProblem, getProblem, getAllProblem };
