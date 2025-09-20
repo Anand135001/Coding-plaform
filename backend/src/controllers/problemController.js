@@ -80,8 +80,8 @@ const updateProblem = async (req,res) => {
       }
       
       const DsaProblem = await problem.findById(id);
-      if(DsaProblem){
-        return res.status(400).send("ID is not present");
+      if(!DsaProblem){
+        return res.status(404).send("problem not found");
       }
     
       for (const { language, completeCode } of referenceSolution) {
@@ -111,7 +111,7 @@ const updateProblem = async (req,res) => {
       res.status(200).send(changedProblem);
   }
   catch(err){
-    res.status(404).send("Error", +err);
+    res.status(400).send("Error", +err);
   }
 }
 
@@ -133,7 +133,7 @@ const deleteProblem = async (req,res) => {
 
   }
   catch(err){
-    res.status(500).send("Error", +err);
+    res.status(500).send("Error", +err.messager);
   }
 }
 
@@ -145,7 +145,7 @@ const getProblem = async (req, res) => {
       if(!id){
         return res.status(400).send("ID missing");
       }
-      const findProblem = await problem.findById(id);
+      const findProblem = await problem.findById(id).select('title description tags visibleTestCases starterCode');
 
       if(!findProblem){
         return res.status(400).send("Problem is Missing");
@@ -161,16 +161,16 @@ const getProblem = async (req, res) => {
 const getAllProblem = async (req, res) => {
 
   try{
-    const findAllProblem = await problem.findById({}).skip(10).limit(10);
-
-    if(findAllProblem. length == 0){
-      return res.status(400).send("Problem is Missing");
+    const findAllProblem = await problem.find({}).select('_id title tags difficulty');
+    
+    if(!findAllProblem || findAllProblem.length==0){
+      return res.status(404).send("Problem is Missing");
     }
 
     res.status(200).send(findAllProblem);
   }
   catch(err){
-    res.status(500).send("Error", +err);
+    res.status(500).send("Error", err.message);
   }
 }
 
