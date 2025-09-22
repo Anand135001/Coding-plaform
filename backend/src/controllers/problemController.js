@@ -1,5 +1,5 @@
 const {getlanguageById, submitBatch, submitToken} = require("../utils/problemUtility");
-const problem  = require("../models/problemModel");
+const Problem  = require("../models/problemModel");
 
 const createProblem = async(req, res) => {
     
@@ -45,7 +45,7 @@ const createProblem = async(req, res) => {
       }
 
       // store in db
-      const userproblem = await problem.create({
+      const userproblem = await Problem.create({
         ...req.body,
         problemCreator: req.result._id
       });
@@ -79,7 +79,7 @@ const updateProblem = async (req,res) => {
         return res.status(400).send("Invaild ID");
       }
       
-      const DsaProblem = await problem.findById(id);
+      const DsaProblem = await Problem.findById(id);
       if(!DsaProblem){
         return res.status(404).send("problem not found");
       }
@@ -106,7 +106,7 @@ const updateProblem = async (req,res) => {
       }
       
       // update problem in database 
-      const changedProblem = await problem.findByIdAndUpdate(id, {...req.body}, {runValidators: true, new:true});
+      const changedProblem = await Problem.findByIdAndUpdate(id, {...req.body}, {runValidators: true, new:true});
       
       res.status(200).send(changedProblem);
   }
@@ -124,7 +124,7 @@ const deleteProblem = async (req,res) => {
     if(!id){
       return res.status(400).send("ID missing");
     }
-    const problemDelete = await problem.findByIdAndDelete(id);
+    const problemDelete = await Problem.findByIdAndDelete(id);
     
     if(!problemDelete){
       return res.status(404).send("Problem is Not present");
@@ -145,7 +145,7 @@ const getProblem = async (req, res) => {
       if(!id){
         return res.status(400).send("ID missing");
       }
-      const findProblem = await problem.findById(id).select('title description tags visibleTestCases starterCode');
+      const findProblem = await Problem.findById(id).select('title description tags visibleTestCases starterCode');
 
       if(!findProblem){
         return res.status(400).send("Problem is Missing");
@@ -161,7 +161,7 @@ const getProblem = async (req, res) => {
 const getAllProblem = async (req, res) => {
 
   try{
-    const findAllProblem = await problem.find({}).select('_id title tags difficulty');
+    const findAllProblem = await Problem.find({}).select('_id title tags difficulty');
     
     if(!findAllProblem || findAllProblem.length==0){
       return res.status(404).send("Problem is Missing");
