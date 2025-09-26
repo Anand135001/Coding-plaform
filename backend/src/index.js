@@ -6,6 +6,7 @@ require('dotenv').config();
 const redisClient = require('./config/redis');
 const authRouter = require('./routes/userAuthRoute');
 const problemRouter = require('./routes/problemCreatorRoute');
+const submitRouter = require('./routes/submitRoute');
 
 
 app.use(express.json());
@@ -13,6 +14,7 @@ app.use(cookieParser());
 
 app.use('/user', authRouter);
 app.use('/problem', problemRouter);
+app.use('/submission', submitRouter);
 
 
 const IntializeConnection = async () => {

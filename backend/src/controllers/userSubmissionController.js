@@ -3,11 +3,11 @@ const Submission = require('../models/submissisonModel');
 const { getlanguageById, submitBatch, submitToken,} = require("../utils/problemUtility");
 
 const submitCode = async(req, res) => {
-     
+    let submitCodeInDb = null
+   
     try{
         const userId = req.result._id;
-        const problemId = req.params._id;
-
+        const problemId = req.params.id;
         const {code, language} = req.body;
 
         if(!userId || !problemId || !code || !language){
@@ -18,7 +18,7 @@ const submitCode = async(req, res) => {
         const problemfind = await Problem.findById(problemId);
         
         // ===== submit Code result and store in DB ====
-        const submitCodeInDb = await Submission.create({
+        submitCodeInDb = await Submission.create({
             userId,
             problemId,
             code,
@@ -72,26 +72,26 @@ const submitCode = async(req, res) => {
         submitCodeInDb.errorMessage = errorMessage
         
         await submitCodeInDb.save();
-
+        
+        // ==== Update solved problem at user profile ====
+        if(!req.result.problemSolved.includes(problemId)){
+            req.result.problemSolved.push(problemId);
+            await req.result.save();
+        }
         res.status(200).send(submitCodeInDb);
     }   
     catch(err){
-        res.status(500).send("Error", +err);
+    console.error("Submit Error:", err);
+
+    if (submitCodeInDb) {
+      submitCodeInDb.status = "error";
+      submitCodeInDb.errorMessage = err.message;
+      await submitCodeInDb.save();
+    }
+    res.status(500).send({ message: "Error in submission", error: err.message });
     }
 }
 
 module.exports = submitCode;
 
 
-// language_id: 63,
-//     stdin: '123',
-//     expected_output: '6',
-//     stdout: '6\n',
-//     status_id: 3,
-//     created_at: '2025-09-22T05:27:21.603Z',
-//     finished_at: '2025-09-22T05:27:21.973Z',
-//     time: '0.023',
-//     memory: 7332,
-//     stderr: null,
-//     token: 'f52ee288-c1d9-4071-9fe3-b3f398a51aef',
-//     number_of_runs: 1,
