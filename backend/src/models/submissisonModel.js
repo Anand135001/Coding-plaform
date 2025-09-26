@@ -5,12 +5,12 @@ const submissionSchema = new Schema(
   {
     problemId: {
       type: Schema.Types.ObjectId,
-      ref: "Problem", 
+      ref: "problem", 
       required: true,
     },
     userId: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: "user",
       required: true,
     },
     code: {
@@ -20,15 +20,16 @@ const submissionSchema = new Schema(
     language: {
       type: String,
       required: true,
-      enum: ["cpp", "java", "javascript", "python"], 
+      enum: ["c++", "java", "javascript", "python"], 
     },
-    Status: {
+    status: {
       type: String,
       enum: [
-        "Accepted",
-        "Wrong Answer",
-        "Runtime Error",
-        "Time Limit Exceeded",
+        "pending",
+        "accepted",
+        "wrong",
+        "error",
+        "time_limit_exceeded",
       ],
       required: true,
     },
@@ -41,8 +42,8 @@ const submissionSchema = new Schema(
       default: 0,
     },
     errorMessage: {
-      type: Number,
-      deafault: '',
+      type: String,
+      deafault: null,
     },
     testCasesPassed: {
       type: Number,
@@ -56,6 +57,6 @@ const submissionSchema = new Schema(
   { timestamps: true } 
 );
 
-const Submission = mongoose.model("Submission", submissionSchema);
+const Submission = mongoose.model("submission", submissionSchema);
 
 module.exports = Submission;

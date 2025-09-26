@@ -41,6 +41,7 @@ const problemSchema = new Schema({
         "bit manipulation",
         "math",
         "simulation",
+        "two-pointers",
       ],
     },
   ],
@@ -103,18 +104,30 @@ const problemSchema = new Schema({
       },
     },
   ],
-   
+
   referenceSolution: [
     {
-      language:{
-        type:String,
-        required:true,
+      language: {
+        type: String,
+        required: true,
+        enum: [
+          "javascript",
+          "python",
+          "java",
+          "c++",
+          "c",
+          "c#",
+          "ruby",
+          "swift",
+          "go",
+          "rust",
+        ],
       },
-      completeCode:{
-        type:String,
-        required:true
-      }
-    }
+      completeCode: {
+        type: String,
+        required: true,
+      },
+    },
   ],
 
   problemCreator: {
