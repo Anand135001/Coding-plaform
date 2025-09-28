@@ -1,5 +1,6 @@
 const {getlanguageById, submitBatch, submitToken} = require("../utils/problemUtility");
 const Problem  = require("../models/problemModel");
+const User = require("../models/userModel");
 
 const createProblem = async(req, res) => {
     
@@ -35,7 +36,7 @@ const createProblem = async(req, res) => {
         const resultToken = submitResult.map((value) => value.token);
         // === submit tokens to judge 0 ===
         const testResult = await submitToken(resultToken);
-         
+        
         for(const test of testResult){
           if(test.status_id!=3){
             return res.status(400).send("Error occrued")
@@ -50,11 +51,12 @@ const createProblem = async(req, res) => {
         problemCreator: req.result._id
       });
       
+      console.log("all 201 good");
       res.status(201).send("Problem saved!");
       
     }
     catch(err){
-      res.status(400).send("Error:", +err);
+      res.status(400).send("Error: " + err.message);
     }
 }
 
@@ -174,5 +176,20 @@ const getAllProblem = async (req, res) => {
   }
 }
 
+const solvedAllProblemByUser = async (req, res) => {
+    
+  const userId = req.result._id;
+   
+  if(!userId){
+    return res.status(400).send("invaild user id");
+  }
 
-module.exports = {createProblem, updateProblem, deleteProblem, getProblem, getAllProblem };
+  const solvedProblems = await User.find(userId).populate({
+    path:"problemSolved",
+    select:"_id title difficulty tags"
+  });
+
+  return res.status(200).send(solvedProblems);
+}
+
+module.exports = {createProblem, updateProblem, deleteProblem, getProblem, getAllProblem, solvedAllProblemByUser };
