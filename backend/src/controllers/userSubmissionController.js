@@ -92,6 +92,44 @@ const submitCode = async(req, res) => {
     }
 }
 
-module.exports = submitCode;
+const runCode = async(req, res) => {
+
+    try {
+    const userId = req.result._id;
+    const problemId = req.params.id;
+    const { code, language } = req.body;
+
+    if (!userId || !problemId || !code || !language) {
+      return res.status(400).send("fields missing");
+    }
+
+    const problemfind = await Problem.findById(problemId);
+    const languageId = getlanguageById(language);
+
+    const submission = problemfind.visibleTestCases.map((testcase) => ({
+      source_code: code,
+      language_id: languageId,
+      stdin: testcase.input,
+      expected_output: testcase.output,
+    }));
+
+    const submitResult = await submitBatch(submission);
+    const resultToken = submitResult.map((value) => value.token);
+    const testResult = await submitToken(resultToken);
+
+    for (const test of testResult) {
+       if (test.status_id != 3) {
+         return res.status(400).send("Error occrued");
+       }
+    }
+    res.status(201).send(testResult);
+
+    } 
+    catch (err) {
+       res.status(400).send("Error: " + err.message); 
+    }   
+}
+
+module.exports = {submitCode, runCode};
 
 
