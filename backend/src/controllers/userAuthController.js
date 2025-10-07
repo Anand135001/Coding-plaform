@@ -1,4 +1,5 @@
 const User = require("../models/userModel");
+const Submission = require('../models/submissisonModel')
 const validate = require('../utils/validator');
 const bcrypt = require('bcrypt');
 const jwt =  require('jsonwebtoken');
@@ -118,4 +119,18 @@ const adminRegister = async (req, res) => {
     }
 }
 
-module.exports = {register, login, logout, adminRegister};
+
+const deleteProfile = async (req, res) => {
+    
+    try{
+        const userId = req.result._id;
+        await User.findByIdAndDelete(userId);
+
+        res.status(200).send("Profile deleted");
+    }
+    catch(err){
+        res.status(500).send("Internal Successfully");
+    }
+}
+
+module.exports = {register, login, logout, adminRegister, deleteProfile};
