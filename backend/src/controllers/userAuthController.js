@@ -24,8 +24,12 @@ const register = async(req, res) => {
             httpOnly: true,
             secure: process.env.NODE_ENV,
         });
-        res.status(201).send("User register Successfully");
-        
+        res.status(200).json({
+          firstname: user.firstname,
+          role: user.role,
+          _id: user._id,
+          message: "registered successfully",
+        });
     }
     catch(err){
         res.status(400).json({ error: "Registration failed" }); 
@@ -59,7 +63,12 @@ const login = async (req, res) => {
           httpOnly: true,
           secure: process.env.NODE_ENV,
         });
-        res.status(201).send("login Successfully");
+        res.status(201).json({
+            firstname: user.firstname,
+            role: user.role,
+            _id: user._id,
+            message:"login successfully"
+        });
     }
     catch(err){
         res.status(401).send("Error:" +err);
@@ -133,4 +142,19 @@ const deleteProfile = async (req, res) => {
     }
 }
 
-module.exports = {register, login, logout, adminRegister, deleteProfile};
+
+const check = async (req, res) => {
+    const replay = {
+        firstname: req.result.firstname,
+        emailId: req.result.emailID,
+        _id: req.result._id
+    }
+
+    res.status(200).json({
+        user: replay,
+        message:"vaild user"
+    })
+}
+
+
+module.exports = {register, login, logout, adminRegister, deleteProfile, check};
