@@ -34,8 +34,9 @@ const userMiddleware = async (req, res, next) => {
         next();
     }
     catch(err){
-        console.log('Error:',err);
-        res.status(401).json({ message: "Unauthorized" });
+      // For JWT errors (expired, invalid), just continue without auth
+      console.log("Auth middleware error:", err.message);
+      next();
     }
 }
 
