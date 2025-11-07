@@ -1,14 +1,23 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod'; 
+import { useNavigate } from 'react-router';
+import { useSelector, useDispatch } from 'react-redux';
+import { useEffect } from 'react';
+import { registerUser } from '../utils/authSlice';
 
 const signUpSchema = z.object({
-  firstName: z.string().min(3, "Name must be at least 3 characters"),
-  emailId: z.string().email("Invalid email address"),
+  firstname: z.string().min(3, "Name must be at least 3 characters"),
+  emailID: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 function SignUp() {
+  
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { isAuthenticated} = useSelector((state) => state.auth);
+
   const { 
     register, 
     handleSubmit, 
@@ -17,8 +26,14 @@ function SignUp() {
     resolver: zodResolver(signUpSchema)
   });
 
+  useEffect(() => {
+    if(isAuthenticated){
+      navigate('/');
+    }
+  }, [navigate, isAuthenticated]);
+
   const submitData = (data) => { 
-    console.log(data);
+     dispatch(registerUser(data));
   };
 
   return (
@@ -40,10 +55,10 @@ function SignUp() {
                 <span className="label-text font-semibold">First Name</span>
               </label>
               <input 
-                {...register('firstName')}
+                {...register('firstname')}
                 type="text"
                 placeholder="Enter your first name"
-                className={`input input-bordered w-full ${errors.firstName ? 'input-error' : ''}`}
+                className={`input input-bordered w-full ${errors.firstname ? 'input-error' : ''}`}
               />
               {errors.firstName && (
                 <label className="label">
@@ -58,14 +73,14 @@ function SignUp() {
                 <span className="label-text font-semibold">Email</span>
               </label>
               <input 
-                {...register('emailId')}
+                {...register('emailID')}
                 type="email"
                 placeholder="Enter your email"
-                className={`input input-bordered w-full ${errors.emailId ? 'input-error' : ''}`}
+                className={`input input-bordered w-full ${errors.emailID ? 'input-error' : ''}`}
               />
-              {errors.emailId && (
+              {errors.emailID && (
                 <label className="label">
-                  <span className="label-text-alt text-error">{errors.emailId.message}</span>
+                  <span className="label-text-alt text-error">{errors.emailID.message}</span>
                 </label>
               )}
             </div>
