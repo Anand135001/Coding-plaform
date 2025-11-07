@@ -1,13 +1,22 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod'; 
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router';
+import { useEffect } from 'react';
+import { loginUser } from '../utils/authSlice';
 
 const loginSchema = z.object({
-  emailId: z.string().email("Invalid email address"),
+  emailID: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 function SignUp() {
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { isAuthenticated  } = useSelector((state) => state.auth);
+
   const { 
     register, 
     handleSubmit, 
@@ -16,8 +25,14 @@ function SignUp() {
     resolver: zodResolver(loginSchema)
   });
 
+  useEffect(() => {
+    if(isAuthenticated){
+      navigate('/');
+    }
+  },[isAuthenticated, navigate]);
+
   const submitData = (data) => { 
-    console.log(data);
+    dispatch(loginUser(data));
   };
 
   return (
@@ -40,14 +55,14 @@ function SignUp() {
                 <span className="label-text font-semibold">Email</span>
               </label>
               <input 
-                {...register('emailId')}
+                {...register('emailID')}
                 type="email"
                 placeholder="Enter your email"
-                className={`input input-bordered w-full ${errors.emailId ? 'input-error' : ''}`}
+                className={`input input-bordered w-full ${errors.emailID ? 'input-error' : ''}`}
               />
-              {errors.emailId && (
+              {errors.emailID && (
                 <label className="label">
-                  <span className="label-text-alt text-error">{errors.emailId.message}</span>
+                  <span className="label-text-alt text-error">{errors.emailID.message}</span>
                 </label>
               )}
             </div>
