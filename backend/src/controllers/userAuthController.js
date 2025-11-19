@@ -14,7 +14,7 @@ const register = async(req, res) => {
         const { firstname, emailID, password} = req.body;
         req.body.password = await bcrypt.hash(password, 10);
         req.body.role = 'user';
-
+              
         const user = await User.create(req.body);
         
         // ==== Token =====
@@ -144,16 +144,27 @@ const deleteProfile = async (req, res) => {
 
 
 const check = async (req, res) => {
-    const replay = {
-        firstname: req.result.firstname,
-        emailId: req.result.emailID,
-        _id: req.result._id
-    }
+    try{
+        if(!req.result){
+            return res.status(401).json({message: "Unauthorized or invaild token"});
+        }
 
-    res.status(200).json({
-        user: replay,
-        message:"vaild user"
-    })
+        const replay = {
+            firstname: req.result.firstname,
+            emailId: req.result.emailID,
+            _id: req.result._id,
+            role :req.result.role,
+        }
+        
+        res.status(200).json({
+            user: replay,
+            message:"vaild user"
+        });
+    }
+    catch (err){
+      console.error("Error in /user/check", err);
+      res.status(500).json({message: "Internal server error"});
+    }
 }
 
 
