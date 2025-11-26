@@ -117,17 +117,37 @@ const runCode = async(req, res) => {
     const resultToken = submitResult.map((value) => value.token);
     const testResult = await submitToken(resultToken);
 
+    let allPassed = true;
+    let runtime = 0;
+    let memory = 0;
+
     for (const test of testResult) {
        if (test.status_id != 3) {
-         return res.status(400).send("Error occrued");
+          runtime += parseFloat(test.time || 0);
+          memory = Math.max(memory, test.time || 0)
+       }
+       else{
+        allPassed = false;
        }
     }
-    res.status(201).send(testResult);
+    // if the results with success status
+    res.status(200).json({
+      success: allPassed,
+      testCases: testResult,
+      runtime: runtime,
+      memory: memory,
+      totalTestCases: testResult.length,
+      passedTestCases: testResult.filter((test) => test.status_id === 3).length,
+    });
 
     } 
     catch (err) {
-       res.status(400).send("Error: " + err.message); 
-    }   
+       console.error("Run code error:", err);
+        res.status(500).json({ 
+            success: false,
+            error: "Error running code: " + err.message 
+        });
+    }     
 }
 
 module.exports = {submitCode, runCode};
