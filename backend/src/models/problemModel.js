@@ -85,18 +85,6 @@ const problemSchema = new Schema({
       language: {
         type: String,
         required: true,
-        enum: [
-          "javascript",
-          "python",
-          "java",
-          "c++",
-          "c",
-          "c#",
-          "ruby",
-          "swift",
-          "go",
-          "rust",
-        ],
       },
       code: {
         type: String,
@@ -110,18 +98,6 @@ const problemSchema = new Schema({
       language: {
         type: String,
         required: true,
-        enum: [
-          "javascript",
-          "python",
-          "java",
-          "c++",
-          "c",
-          "c#",
-          "ruby",
-          "swift",
-          "go",
-          "rust",
-        ],
       },
       completeCode: {
         type: String,
