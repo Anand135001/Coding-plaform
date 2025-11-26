@@ -148,7 +148,9 @@ const getProblem = async (req, res) => {
       if(!id){
         return res.status(400).send("ID missing");
       }
-      const findProblem = await Problem.findById(id).select('title description tags visibleTestCases starterCode');
+      const findProblem = await Problem.findById(id).select(
+        "title difficulty description tags visibleTestCases starterCode"
+      );
 
       if(!findProblem){
         return res.status(400).send("Problem is Missing");
