@@ -6,7 +6,6 @@ const getlanguageById = (lang) => {
         "c++":54,
         "java":62,
         "javascript":63,
-        "python":71,
     }
 
     return language[lang.toLowerCase()];
