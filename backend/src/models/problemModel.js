@@ -1,51 +1,25 @@
-const mongoose =  require('mongoose');
-const {Schema} = mongoose;
+const mongoose = require("mongoose");
+const { Schema } = mongoose;
 
 const problemSchema = new Schema({
   title: {
     type: String,
     required: true,
   },
-
   description: {
     type: String,
     required: true,
   },
-
   difficulty: {
     type: String,
-    required: true,
     enum: ["easy", "medium", "hard"],
+    required: true,
   },
-
-  tags: [
-    {
-      type: String,
-      required: true,
-      enum: [
-        "array",
-        "linkedlist",
-        "graph",
-        "DP",
-        "tree",
-        "string",
-        "hash table",
-        "sorting",
-        "binary search",
-        "stack",
-        "queue",
-        "heap",
-        "greedy",
-        "recursion",
-        "backtracking",
-        "bit manipulation",
-        "math",
-        "simulation",
-        "two-pointers",
-      ],
-    },
-  ],
-
+  tags: {
+    type: String,
+    enum: ["array", "linkedList", "graph", "dp"],
+    required: true,
+  },
   visibleTestCases: [
     {
       input: {
@@ -73,20 +47,16 @@ const problemSchema = new Schema({
         type: String,
         required: true,
       },
-      explanation: {
-        type: String,
-        required: true,
-      },
     },
   ],
 
-  starterCode: [
+  startCode: [
     {
       language: {
         type: String,
         required: true,
       },
-      code: {
+      initialCode: {
         type: String,
         required: true,
       },
@@ -113,6 +83,6 @@ const problemSchema = new Schema({
   },
 });
 
-const Problem = mongoose.model('problem', problemSchema);
+const Problem = mongoose.model("problem", problemSchema);
 
 module.exports = Problem;

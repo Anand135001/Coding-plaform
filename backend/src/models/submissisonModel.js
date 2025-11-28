@@ -1,16 +1,16 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const submissionSchema = new Schema(
   {
-    problemId: {
-      type: Schema.Types.ObjectId,
-      ref: "problem", 
-      required: true,
-    },
     userId: {
       type: Schema.Types.ObjectId,
       ref: "user",
+      required: true,
+    },
+    problemId: {
+      type: Schema.Types.ObjectId,
+      ref: "problem",
       required: true,
     },
     code: {
@@ -20,44 +20,40 @@ const submissionSchema = new Schema(
     language: {
       type: String,
       required: true,
-      enum: ["c++", "java", "javascript", "python"], 
+      enum: ["javascript", "c++", "java"],
     },
     status: {
       type: String,
-      enum: [
-        "pending",
-        "accepted",
-        "wrong",
-        "error",
-        "time_limit_exceeded",
-      ],
-      required: true,
+      enum: ["pending", "accepted", "wrong", "error"],
+      default: "pending",
     },
-    runtime: {       //time complexity
-      type: Number, 
+    runtime: {
+      type: Number, // milliseconds
       default: 0,
     },
-    memory: {        //space complexity
-      type: Number, 
+    memory: {
+      type: Number, // kB
       default: 0,
     },
     errorMessage: {
       type: String,
-      deafault: null,
+      default: "",
     },
     testCasesPassed: {
       type: Number,
-      default: 0
+      default: 0,
     },
     testCasesTotal: {
       type: Number,
-      deafault: 0
-    }
+      default: 0,
+    },
   },
-  { timestamps: true } 
+  {
+    timestamps: true,
+  }
 );
 
-submissionSchema.index({userId:1, problemId:1});
+submissionSchema.index({ userId: 1, problemId: 1 });
 
 const Submission = mongoose.model("submission", submissionSchema);
 
