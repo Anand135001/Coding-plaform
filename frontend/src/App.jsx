@@ -2,10 +2,10 @@ import { Routes, Route, Navigate } from "react-router";
 import Homepage from "./pages/Homepage";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
-import { checkAuth } from "./utils/authSlice";
+import { checkAuth } from "./authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import MonacoEditor from "./components/monacoEditor";
+// import MonacoEditor from "./components/monacoEditor";
 import ProblemPage from './pages/Problempage';
 import Admin from './pages/Admin'
 import AdminPanel from './components/AdminPanel'

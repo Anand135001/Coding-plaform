@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router';
 import { useEffect } from 'react';
-import { loginUser } from '../utils/authSlice';
+import { loginUser } from '../authSlice';
 
 const loginSchema = z.object({
   emailID: z.string().email("Invalid email address"),
@@ -15,7 +15,7 @@ function SignUp() {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isAuthenticated  } = useSelector((state) => state.auth);
+  const { isAuthenticated } = useSelector((state) => state.auth);
 
   const { 
     register, 
