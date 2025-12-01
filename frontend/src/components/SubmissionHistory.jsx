@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axiosClient from '../config/axiosClient';
+import axiosClient from '../utils/axiosClient';
 
 const SubmissionHistory = ({ problemId }) => {
   const [submissions, setSubmissions] = useState([]);
