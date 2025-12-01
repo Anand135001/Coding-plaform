@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { useNavigate } from 'react-router';
 import { useSelector, useDispatch } from 'react-redux';
 import { useEffect } from 'react';
-import { registerUser } from '../utils/authSlice';
+import { registerUser } from '../authSlice';
 
 const signUpSchema = z.object({
   firstname: z.string().min(3, "Name must be at least 3 characters"),
