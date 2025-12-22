@@ -8,10 +8,14 @@ const submitCode = async(req, res) => {
     try{
         const userId = req.result._id;
         const problemId = req.params.id;
-        const {code, language} = req.body;
-
+        let {code, language} = req.body;
+        
         if(!userId || !problemId || !code || !language){
             return res.status(400).send("fields missing");
+        }
+        
+        if(language === "cpp"){
+            language = "c++";
         }
 
         // ===== fetch problem to get info =====
@@ -97,10 +101,14 @@ const runCode = async(req, res) => {
     try {
     const userId = req.result._id;
     const problemId = req.params.id;
-    const { code, language } = req.body;
+    let { code, language } = req.body;
 
     if (!userId || !problemId || !code || !language) {
       return res.status(400).send("fields missing");
+    }
+
+    if (language === "cpp") {
+      language = "c++";
     }
 
     const problemfind = await Problem.findById(problemId);
@@ -112,10 +120,14 @@ const runCode = async(req, res) => {
       stdin: testcase.input,
       expected_output: testcase.output,
     }));
+    
+    console.log(submission);
 
     const submitResult = await submitBatch(submission);
+    console.log("submit result", submitResult);
     const resultToken = submitResult.map((value) => value.token);
     const testResult = await submitToken(resultToken);
+    console.log("test result", testResult)
 
     let allPassed = true;
     let runtime = 0;
