@@ -14,7 +14,7 @@ function Homepage() {
     tag: 'all',
     status: 'all' 
   });
-
+  
   useEffect(() => {
     const fetchProblems = async () => {
       try {
@@ -61,7 +61,7 @@ function Homepage() {
         <div className="flex-none gap-4">
           <div className="dropdown dropdown-end">
             <div tabIndex={0} className="btn btn-ghost">
-              {user?.firstName}
+              {user?.firstname}
             </div>
             <ul className="mt-3 p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
               <li><button onClick={handleLogout}>Logout</button></li>
