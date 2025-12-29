@@ -5,11 +5,12 @@ import Login from "./pages/Login";
 import { checkAuth } from "./authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-// import MonacoEditor from "./components/monacoEditor";
 import ProblemPage from './pages/Problempage';
 import Admin from './pages/Admin'
 import AdminPanel from './components/AdminPanel'
 import AdminDelete from "./components/AdminDelete";
+import AdminUpdate from "./components/AdminUpdate";
+import UpdateProblem from "./components/UpdateProblem";
 
 function App(){
 
@@ -38,6 +39,9 @@ function App(){
          <Route path="/admin" element={isAuthenticated && user?.role === 'admin' ? <Admin /> : <Navigate to="/" />} />
          <Route path="/admin/create" element={isAuthenticated && user?.role === 'admin' ? <AdminPanel /> : <Navigate to="/" />} />
          <Route path="/admin/delete" element={isAuthenticated && user?.role === 'admin' ? < AdminDelete /> : <Navigate to="/" /> } />
+         <Route path="/admin/update" element={isAuthenticated && user?.role === 'admin' ? < AdminUpdate /> : <Navigate to="/" /> } />
+         <Route path="/admin/update/:problemId" element={<UpdateProblem />} />
+
          <Route path="/problem/:problemId" element={<ProblemPage/>} />
          
       </Routes>
