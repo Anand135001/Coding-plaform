@@ -79,6 +79,7 @@ const updateProblem = async (req, res) => {
     problemCreator,
   } = req.body;
 
+  console.log("id is here:",id);
   try {
     if (!id) {
       return res.status(400).send("Missing ID Field");
@@ -88,16 +89,11 @@ const updateProblem = async (req, res) => {
     if (!DsaProblem) {
       return res.status(404).send("ID is not persent in server");
     }
-
+    
     for (const { language, completeCode } of referenceSolution) {
-      // source_code:
-      // language_id:
-      // stdin:
-      // expectedOutput:
-
-      const languageId = getLanguageById(language);
-
-      // I am creating Batch submission
+    
+      const languageId = getlanguageById(language);
+      
       const submissions = visibleTestCases.map((testcase) => ({
         source_code: completeCode,
         language_id: languageId,
@@ -106,15 +102,8 @@ const updateProblem = async (req, res) => {
       }));
 
       const submitResult = await submitBatch(submissions);
-      // console.log(submitResult);
-
       const resultToken = submitResult.map((value) => value.token);
-
-      // ["db54881d-bcf5-4c7b-a2e3-d33fe7e25de7","ecc52a9b-ea80-4a00-ad50-4ab6cc3bb2a1","1b35ec3b-5776-48ef-b646-d5522bdeb2cc"]
-
       const testResult = await submitToken(resultToken);
-
-      //  console.log(testResult);
 
       for (const test of testResult) {
         if (test.status_id != 3) {
@@ -204,8 +193,14 @@ const submittedProblem = async (req, res) => {
 
     const ans = await Submission.find({ userId, problemId });
 
-    if (ans.length == 0) res.status(200).send("No Submission is persent");
-
+    if (ans.length == 0){
+      res.status(200).json({
+        length: ans.length,
+        message: "No submission is present",
+        submissions: ans
+      });
+    } 
+;
     res.status(200).send(ans);
   } catch (err) {
     res.status(500).send("Internal Server Error");
