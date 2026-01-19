@@ -27,8 +27,7 @@ const ProblemPage = () => {
   const { handleSubmit } = useForm();
 
 
-  // Fetch problem data
-  
+  // ==== Fetch problem data ====
   useEffect(() => {
     const fetchProblem = async () => {
       setLoading(true);
@@ -53,7 +52,7 @@ const ProblemPage = () => {
     fetchProblem();
   }, [problemId]);
 
-  // Update code when language changes
+  // ===== Update code when language changes =====
   useEffect(() => {
     if (problem) {
       const initialCode = problem.startCode.find(sc => sc.language === langMap[selectedLanguage]).initialCode;
@@ -176,6 +175,13 @@ const ProblemPage = () => {
           >
             Submissions
           </button>
+
+          <button 
+            className={`tab ${activeLeftTab === 'chatbot' ? 'tab-active' : ''}`}
+            onClick={() => setActiveLeftTab('chatbot')}
+          >
+           Root AI
+          </button>
         </div>
 
         {/* Left Content */}
@@ -249,7 +255,16 @@ const ProblemPage = () => {
                 <div>
                   <h2 className="text-xl font-bold mb-4">My Submissions</h2>
                   <div className="text-gray-500">
-                    <SubmissionHistory problemId={problemId} />
+                   { <SubmissionHistory problemId={problemId} /> }
+                  </div>
+                </div>
+              )}
+
+              {activeLeftTab === 'chatbot' && (
+                <div className="prose max-w-none">
+                  <h2 className="text-xl font-bold mb-4">Root AI</h2>
+                  <div className="whitespace-pre-wrap text-sm leading-relaxed">
+                    {'Root AI is here '}
                   </div>
                 </div>
               )}
