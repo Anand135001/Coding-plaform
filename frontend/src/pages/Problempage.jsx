@@ -4,6 +4,7 @@ import Editor from '@monaco-editor/react';
 import { useParams } from 'react-router';
 import axiosClient from "../utils/axiosClient"
 import SubmissionHistory from "../components/SubmissionHistory"
+import Chatbot from '../components/ChatbBot';
 
 const langMap = {
         cpp: 'C++',
@@ -264,7 +265,7 @@ const ProblemPage = () => {
                 <div className="prose max-w-none">
                   <h2 className="text-xl font-bold mb-4">Root AI</h2>
                   <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                    {'Root AI is here '}
+                    {<Chatbot problem={problem}/>}
                   </div>
                 </div>
               )}
