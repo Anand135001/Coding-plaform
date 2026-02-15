@@ -2,6 +2,7 @@ const { getlanguageById, submitBatch, submitToken, } = require("../utils/problem
 const Problem = require("../models/problemModel");
 const User = require("../models/userModel");
 const Submission = require("../models/submissisonModel");
+const SolutionVideo = require("../models/videosModel");
 
 const createProblem = async (req, res) => {
   // API request to authenticate user:
@@ -147,10 +148,22 @@ const getProblemById = async (req, res) => {
     const getProblem = await Problem.findById(id).select(
       "_id title description difficulty tags visibleTestCases startCode referenceSolution "
     );
-
+    
     if (!getProblem) return res.status(404).send("Problem is Missing");
+    
+    const videos = await SolutionVideo.find({problemId:id});
 
-    res.status(200).send(getProblem);
+    if(videos.length > 0){
+      getProblem.secureUrl = secureUrl;
+      getProblem.cloudinaryPublicId = cloudinaryPublicId;
+      getProblem.thumbnailUrl = thumbnailUrl;
+      getProblem.duration = duration;
+
+      return res.status(200).send(getProblem);
+    }
+      
+     res.status(200).send(getProblem);
+     
   } catch (err) {
     res.status(500).send("Error: " + err);
   }
