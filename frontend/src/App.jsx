@@ -42,11 +42,11 @@ function App(){
          <Route path="/admin/create" element={isAuthenticated && user?.role === 'admin' ? <AdminPanel /> : <Navigate to="/" />} />
          <Route path="/admin/delete" element={isAuthenticated && user?.role === 'admin' ? < AdminDelete /> : <Navigate to="/" /> } />
          <Route path="/admin/update" element={isAuthenticated && user?.role === 'admin' ? < AdminUpdate /> : <Navigate to="/" /> } />
+         <Route path="/admin/update/:problemId" element={<UpdateProblem />} />
+
          <Route path="/admin/video" element={isAuthenticated && user?.role === 'admin' ? < AdminVideo /> : <Navigate to="/" /> } />
          <Route path="/admin/upload/:problemId" element={isAuthenticated && user?.role === 'admin' ? < AdminUplaod /> : <Navigate to="/" /> } />
          
-         <Route path="/admin/update/:problemId" element={<UpdateProblem />} />
-
          <Route path="/problem/:problemId" element={<ProblemPage/>} />
          
       </Routes>
