@@ -121,27 +121,23 @@ const runCode = async(req, res) => {
       expected_output: testcase.output,
     }));
     
-    console.log(submission);
-
     const submitResult = await submitBatch(submission);
-    console.log("submit result", submitResult);
     const resultToken = submitResult.map((value) => value.token);
     const testResult = await submitToken(resultToken);
-    console.log("test result", testResult)
 
     let allPassed = true;
     let runtime = 0;
     let memory = 0;
 
     for (const test of testResult) {
-       if (test.status_id != 3) {
-          runtime += parseFloat(test.time || 0);
-          memory = Math.max(memory, test.time || 0)
-       }
-       else{
-        allPassed = false;
-       }
+        runtime += parseFloat(test.time || 0);
+        memory = Math.max(memory, test.time || 0);
+
+        if(test.status.id !== 3){
+          allPassed = false;
+        }
     }
+    
     // if the results with success status
     res.status(200).json({
       success: allPassed,
