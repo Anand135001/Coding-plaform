@@ -47,25 +47,18 @@ const submitCode = async(req, res) => {
         let testCasesPassed = 0;
         let runtime = 0;
         let memory = 0;
-        let status = 'accepted';
+        let status = 'Accepted';
         let errorMessage = null
 
-        for(const test of testResult){
-            if(test.status_id == 3){
-               testCasesPassed++;
-               runtime += parseFloat(test.time);
-               memory = Math.max(memory, test.memory);
-            }
-            else{
-                if(test.status_id == 4){
-                   status = 'error';
-                   errorMessage = test.stderr;
-                }
-                else{
-                    status = 'wrong';
-                    errorMessage = test.stderr;
-                }
-            }
+        for (const test of testResult) {
+          runtime += parseFloat(test.time || 0);
+          memory = Math.max(memory, test.memory || 0);
+
+          if (test.status_id !== 3) {
+            status = "Wrong Answer";
+            errorMessage = test.stderr;
+            break;
+          }
         }
         
         // ==== update pending submitted code result in Database ====
@@ -82,7 +75,17 @@ const submitCode = async(req, res) => {
             req.result.problemSolved.push(problemId);
             await req.result.save();
         }
-        res.status(200).send(submitCodeInDb);
+
+        res.status(200).json({
+          accepted: status === "accepted",
+          status,
+          passedTestCases: testCasesPassed,
+          totalTestCases: problemfind.hiddenTestCases.length,
+          runtime,
+          memory,
+          error: errorMessage,
+        });
+
     }   
     catch(err){
     console.error("Submit Error:", err);
