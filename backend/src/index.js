@@ -8,6 +8,8 @@ const authRouter = require('./routes/userAuthRoute');
 const problemRouter = require('./routes/problemCreatorRoute');
 const submitRouter = require('./routes/submitRoute');
 const aiRouter = require('./routes/aiModel');
+const videoRouter = require('./routes/videoCreate');
+
 const cors = require('cors');
 
 
@@ -21,8 +23,8 @@ app.use(cors({
 app.use('/user', authRouter);
 app.use('/problem', problemRouter);
 app.use('/submission', submitRouter);
-app.use('/AI', aiRouter);
-
+app.use('/ai', aiRouter);
+app.use('/video', videoRouter)
 
 const IntializeConnection = async () => {
    try{
