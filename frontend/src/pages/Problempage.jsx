@@ -5,18 +5,17 @@ import { useParams } from 'react-router';
 import axiosClient from "../utils/axiosClient"
 import SubmissionHistory from "../components/SubmissionHistory"
 import Chatbot from '../components/ChatbBot';
-
-const langMap = {
-        cpp: 'C++',
-        java: 'Java',
-        javascript: 'JavaScript'
-};
+import Editorial from '../components/EditorialVideo';
 
 
 const ProblemPage = () => {
   const [problem, setProblem] = useState(null);
   const [selectedLanguage, setSelectedLanguage] = useState('javascript');
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState({
+    javascript: '',
+    java: '',
+    cpp: ''
+  });
   const [loading, setLoading] = useState(false);
   const [runResult, setRunResult] = useState(null);
   const [submitResult, setSubmitResult] = useState(null);
@@ -32,18 +31,40 @@ const ProblemPage = () => {
   useEffect(() => {
     const fetchProblem = async () => {
       setLoading(true);
-      try {
-        
+      try {  
         const response = await axiosClient.get(`/problem/problemById/${problemId}`);
-       
-        
-        const initialCode = response.data.startCode.find(sc => sc.language === langMap[selectedLanguage]).initialCode;
-
         setProblem(response.data);
+
+        // Check if saved code exists in localStorage
+        const savedCode = localStorage.getItem(`code_${problemId}`);
+        if (savedCode) {
+          console.log("yes")
+          // If saved draft exists → load it
+          setCode(JSON.parse(savedCode));
         
-        setCode(initialCode);
+        } else {
+          // If no saved draft → initialize from starter code
+          console.log("no")
+          const initialCodeMap = {
+            javascript: "",
+            java: "",
+            cpp: ""
+          };
+  
+          response.data.startCode.forEach(sc => {
+          const lang = sc.language.toLowerCase();
+
+          if (lang === "c++") {
+            initialCodeMap.cpp = sc.initialCode;
+          } else if (lang === "javascript") {
+            initialCodeMap.javascript = sc.initialCode;
+          } else if (lang === "java") {
+            initialCodeMap.java = sc.initialCode;
+          }
+        });
+        setCode(initialCodeMap);
+      }       
         setLoading(false);
-        
       } catch (error) {
         console.error('Error fetching problem:', error);
         setLoading(false);
@@ -53,17 +74,26 @@ const ProblemPage = () => {
     fetchProblem();
   }, [problemId]);
 
-  // ===== Update code when language changes =====
-  useEffect(() => {
-    if (problem) {
-      const initialCode = problem.startCode.find(sc => sc.language === langMap[selectedLanguage]).initialCode;
-      setCode(initialCode);
-    }
-  }, [selectedLanguage, problem]);
-
   const handleEditorChange = (value) => {
-    setCode(value || '');
+    setCode(prev => ({
+      ...prev,
+      [selectedLanguage]: value || ''
+    }));
   };
+// === save code in local storage ===
+  useEffect(() => {
+  const hasRealCode =
+    code.javascript?.trim() ||
+    code.java?.trim() ||
+    code.cpp?.trim();
+
+  if (hasRealCode) {
+    localStorage.setItem(
+      `code_${problemId}`,
+      JSON.stringify(code)
+    );
+  }
+}, [code, problemId]);
 
   const handleEditorDidMount = (editor) => {
     editorRef.current = editor;
@@ -79,7 +109,7 @@ const ProblemPage = () => {
     
     try {
       const response = await axiosClient.post(`/submission/run/${problemId}`, {
-        code,
+        code: code[selectedLanguage],
         language: selectedLanguage
       });
 
@@ -104,10 +134,10 @@ const ProblemPage = () => {
     
     try {
         const response = await axiosClient.post(`/submission/submit/${problemId}`, {
-        code:code,
+        code:code[selectedLanguage],
         language: selectedLanguage
       });
-
+       console.log("sumbit ressult response:",response.data);
        setSubmitResult(response.data);
        setLoading(false);
        setActiveRightTab('result');
@@ -225,9 +255,9 @@ const ProblemPage = () => {
 
               {activeLeftTab === 'editorial' && (
                 <div className="prose max-w-none">
-                  <h2 className="text-xl font-bold mb-4">Editorial</h2>
+                  <h2 className="text-xl font-bold mb-4"></h2>
                   <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                    {'Editorial is here for the problem'}
+                    {<Editorial secureUrl={problem.secureUrl} thumbnailUrl={problem.thumbnailUrl} duration={problem.duration}/>}
                   </div>
                 </div>
               )}
@@ -322,7 +352,7 @@ const ProblemPage = () => {
                 <Editor
                   height="100%"
                   language={getLanguageForMonaco(selectedLanguage)}
-                  value={code}
+                  value={code[selectedLanguage] || ""}
                   onChange={handleEditorChange}
                   onMount={handleEditorDidMount}
                   theme="vs-dark"
@@ -441,23 +471,26 @@ const ProblemPage = () => {
               {submitResult ? (
                 <div className={`alert ${submitResult.accepted ? 'alert-success' : 'alert-error'}`}>
                   <div>
-                    {submitResult.accepted ? (
-                      <div>
-                        <h4 className="font-bold text-lg">🎉 Accepted</h4>
-                        <div className="mt-4 space-y-2">
-                          <p>Test Cases Passed: {submitResult.passedTestCases}/{submitResult.totalTestCases}</p>
-                          <p>Runtime: {submitResult.runtime + " sec"}</p>
-                          <p>Memory: {submitResult.memory + "KB"} </p>
-                        </div>
-                      </div>
-                    ) : (
-                      <div>
-                        <h4 className="font-bold text-lg">❌ {submitResult.error}</h4>
-                        <div className="mt-4 space-y-2">
-                          <p>Test Cases Passed: {submitResult.passedTestCases}/{submitResult.totalTestCases}</p>
-                        </div>
-                      </div>
-                    )}
+                    {/* show title status */}
+                    <h4 className="font-bold text-lg">
+                      {submitResult.accepted? "🎉 Accepted" : submitResult.status?.replaceAll("_", " ").toUpperCase()}
+                    </h4>
+                    
+                    {/* deails */}
+                    <div className="mt-4 space-y-2">
+                      <p>Test Cases Passed: 
+                        {submitResult.passedTestCases}/
+                        {submitResult.totalTestCases}
+                      </p>
+                      <p>Runtime: {submitResult.runtime} sec</p>
+                      <p>Memory: {submitResult.memory} KB</p>
+                      
+                      {/* if error occurs */}
+                      {submitResult.error && (
+                        <pre className="text-sm text-red-500 mt-2 whitespace-pre-wrap"> {submitResult.error} </pre>
+                      )}
+
+                    </div>
                   </div>
                 </div>
               ) : (
