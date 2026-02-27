@@ -2,6 +2,29 @@ const Problem =  require('../models/problemModel');
 const Submission = require('../models/submissisonModel');
 const { getlanguageById, submitBatch, submitToken,} = require("../utils/problemUtility");
 
+// judge zero response mapping
+function mapJudgeStatus(statusId) {
+  switch (statusId) {
+    case 3:
+      return "accepted";
+    case 4:
+      return "wrong";
+    case 5:
+      return "time_limit_exceeded";
+    case 6:
+      return "compilation_error";
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+    case 11:
+    case 12:
+      return "runtime_error";
+    default:
+      return "error";
+  }
+}
+
 const submitCode = async(req, res) => {
     let submitCodeInDb = null
    
@@ -19,21 +42,24 @@ const submitCode = async(req, res) => {
         }
 
         // ===== fetch problem to get info =====
-        const problemfind = await Problem.findById(problemId);
-        
+        const problem = await Problem.findById(problemId);
+        if (!problem) {
+          return res.status(404).json({ message: "Problem not found" });
+        }
+
         // ===== submit Code result and store in DB ====
         submitCodeInDb = await Submission.create({
             userId,
             problemId,
             code,
             language,
-            testCasesTotal: problemfind.hiddenTestCases.length,
+            testCasesTotal: problem.hiddenTestCases.length,
             status: 'pending'
         })
 
         const languageId = getlanguageById(language);
 
-        const submission = problemfind.hiddenTestCases.map((testcase) => ({
+        const submission = problem.hiddenTestCases.map((testcase) => ({
                             source_code: code,
                             language_id: languageId,
                             stdin: testcase.input,
@@ -47,18 +73,22 @@ const submitCode = async(req, res) => {
         let testCasesPassed = 0;
         let runtime = 0;
         let memory = 0;
-        let status = 'Accepted';
-        let errorMessage = null
+        let status = 'accepted';
+        let errorMessage = null;
 
         for (const test of testResult) {
           runtime += parseFloat(test.time || 0);
           memory = Math.max(memory, test.memory || 0);
 
-          if (test.status_id !== 3) {
-            status = "Wrong Answer";
-            errorMessage = test.stderr;
-            break;
+          if (test.status_id === 3) {
+            testCasesPassed++;
+            continue;
           }
+
+          status = mapJudgeStatus(test.status_id);
+          errorMessage = test.compile_output || test.stderr || test.message || null;
+          // stop at first wrong answer
+          break;
         }
         
         // ==== update pending submitted code result in Database ====
@@ -71,16 +101,18 @@ const submitCode = async(req, res) => {
         await submitCodeInDb.save();
         
         // ==== Update solved problem at user profile ====
-        if(!req.result.problemSolved.includes(problemId)){
-            req.result.problemSolved.push(problemId);
-            await req.result.save();
+        if(status === "accepted"){
+            if(!req.result.problemSolved.includes(problemId)){
+                req.result.problemSolved.push(problemId);
+                await req.result.save();
+            }
         }
 
         res.status(200).json({
           accepted: status === "accepted",
           status,
           passedTestCases: testCasesPassed,
-          totalTestCases: problemfind.hiddenTestCases.length,
+          totalTestCases: problem.hiddenTestCases.length,
           runtime,
           memory,
           error: errorMessage,

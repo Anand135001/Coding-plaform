@@ -24,8 +24,17 @@ const submissionSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "accepted", "wrong", "error"],
-      default: "pending",
+      enum: [
+        "pending",
+        "accepted",
+        "wrong",
+        "runtime_error",
+        "compilation_error",
+        "time_limit_exceeded",
+        "error",
+      ],
+      required: true,
+      default: 'pending',
     },
     runtime: {
       type: Number, // milliseconds
@@ -50,7 +59,7 @@ const submissionSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 submissionSchema.index({ userId: 1, problemId: 1 });
