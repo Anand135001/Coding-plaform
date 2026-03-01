@@ -13,6 +13,7 @@ import AdminUpdate from "./components/AdminUpdate";
 import UpdateProblem from "./components/UpdateProblem";
 import AdminVideo from "./components/AdminVideos";
 import AdminUplaod from "./components/AdminUpload";
+import ProfilePage from "./pages/ProfilePage";
 
 function App(){
 
@@ -48,6 +49,8 @@ function App(){
          <Route path="/admin/upload/:problemId" element={isAuthenticated && user?.role === 'admin' ? < AdminUplaod /> : <Navigate to="/" /> } />
          
          <Route path="/problem/:problemId" element={<ProblemPage/>} />
+
+         <Route path="/profile" element={<ProfilePage />} />
          
       </Routes>
     </>

@@ -167,5 +167,44 @@ const check = async (req, res) => {
     }
 }
 
+const getProfile = async (req, res) => {
+  try {
+    const user = req.result; 
 
-module.exports = {register, login, logout, adminRegister, deleteProfile, check};
+    const submissions = await Submission.find({ userId: user._id });
+
+    const totalSubmissions = submissions.length;
+    const acceptedSubmissions = submissions.filter(
+      (s) => s.status === "accepted",
+    ).length;
+
+    const solvedProblems = new Set(
+      submissions
+        .filter((s) => s.status === "accepted")
+        .map((s) => s.problemId.toString()),
+    );
+
+    res.status(200).json({
+      user: {
+        name: user.firstname,
+        email: user.emailID,
+        role: user.role,
+        joinedAt: user.createdAt,
+      },
+      stats: {
+        totalSubmissions,
+        acceptedSubmissions,
+        solvedCount: solvedProblems.size,
+        successRate:
+          totalSubmissions > 0
+            ? ((acceptedSubmissions / totalSubmissions) * 100).toFixed(2)
+            : 0,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching profile" });
+  }
+};
+
+
+module.exports = {register, login, logout, adminRegister, deleteProfile, check, getProfile};
