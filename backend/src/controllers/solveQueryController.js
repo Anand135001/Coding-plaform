@@ -5,14 +5,13 @@ const solveQuery = async(req, res) => {
     try{
         const {messages,title,description, testCases, startCode} = req.body;
 
-        const ai = new GoogleGenAI({apikey: process.env.GEMINI_API_KEY});
-          
-        async function main() {
-            const response = await ai.models.generateContent({
-              model: "gemini-2.5-flash",
-              contents: messages,
-              config: {
-                systemInstruction: `You are an expert coding assistant specializing in algorithmic problem-solving.
+        const ai = new GoogleGenAI({apiKey: process.env.GEMINI_API_KEY});
+
+        const stream = await ai.models.generateContentStream({
+          model: "gemini-2.5-flash",
+          contents: messages,
+          config: {
+            systemInstruction: `You are an expert coding assistant specializing in algorithmic problem-solving.
                 
                 ##CURRENT PROBLEM CONTEXT:
                 {PROBLEM_TITLE}: ${title}
@@ -34,19 +33,25 @@ const solveQuery = async(req, res) => {
                 
                 3. If the user provides conversation history (messages), continue the discussion contextually.
                 
-                4. For non-coding queries, politely redirect to programming topics.`,
-              },
-            });
-            res.status(201).json({
-              message:response.text
-            });
-            console.log("response",response.text)
+              4. For non-coding queries, politely redirect to programming topics.`,
+            },
+        });
+        
+        res.setHeader("Content-Type", "text/plain; charset=utf-8");
+        res.flushHeaders();
+       
+        for await(const chunk of stream){
+          const text = chunk.text;
+          if(text){
+            res.write(text);
+          }
         }
-
-        main();
+          
+        res.end();
     }
     catch(err){
-       res.status.send("ai model");
+      console.log("Model error:", err); 
+      res.status(500).send("Error from model");
     } 
 }
 
