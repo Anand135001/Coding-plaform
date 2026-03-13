@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import axiosClient from '../utils/axiosClient';
-import ProblemForm from './ProblemForm';
+import axiosClient from '../../utils/axiosClient';
+import ProblemForm from '../../components/ProblemForm';
 
 const UpdateProblem = () => {
   const { problemId } = useParams();

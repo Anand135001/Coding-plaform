@@ -6,13 +6,13 @@ import { checkAuth } from "./authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import ProblemPage from './pages/Problempage';
-import Admin from './pages/Admin'
-import AdminPanel from './components/AdminPanel'
-import AdminDelete from "./components/AdminDelete";
-import AdminUpdate from "./components/AdminUpdate";
-import UpdateProblem from "./components/UpdateProblem";
-import AdminVideo from "./components/AdminVideos";
-import AdminUplaod from "./components/AdminUpload";
+import Admin from './pages/admin/Admin'
+import AdminPanel from './pages/admin/AdminPanel'
+import AdminDelete from "./pages/admin/AdminDelete";
+import AdminUpdate from "./pages/admin/AdminUpdate";
+import UpdateProblem from "./pages/admin/UpdateProblem";
+import AdminVideo from "./pages/admin/AdminVideos";
+import AdminUplaod from "./pages/admin/AdminUpload";
 import ProfilePage from "./pages/ProfilePage";
 
 function App(){

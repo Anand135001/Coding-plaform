@@ -2,7 +2,7 @@ import { useParams } from 'react-router';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
-import axiosClient from '../utils/axiosClient';
+import axiosClient from '../../utils/axiosClient';
 
 const AdminUplaod = () => {
     

@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useParams, useNavigate } from 'react-router';
-import axiosClient from '../utils/axiosClient';
-import problemSchema from '../utils/problemSchema';
+import axiosClient from '../../utils/axiosClient';
+import problemSchema from '../../utils/problemSchema';
 
 function AdminEdit() {
   const { id } = useParams();
