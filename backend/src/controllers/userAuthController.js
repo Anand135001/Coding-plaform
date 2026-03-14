@@ -6,6 +6,13 @@ const jwt =  require('jsonwebtoken');
 const redisClient = require("../config/redis");
 
 
+const cookieOptions = {
+  maxAge: 10 * 60 * 60 * 1000,
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+};
+
 const register = async(req, res) => {
     
     try{
@@ -19,11 +26,8 @@ const register = async(req, res) => {
         
         // ==== Token =====
         const token = jwt.sign({_id:user._id, role:user.role}, process.env.JWT_KEY, {expiresIn: 60*60});
-        res.cookie('token', token, {
-            maxAge: 60*60*1000,
-            httpOnly: true,
-            secure: process.env.NODE_ENV,
-        });
+        
+        res.cookie('token', token, cookieOptions);
         res.status(200).json({
           firstname: user.firstname,
           role: user.role,
@@ -58,11 +62,7 @@ const login = async (req, res) => {
         }
         const token = jwt.sign({_id:user._id, role:user.role}, process.env.JWT_KEY, {expiresIn: 60*60});
         
-        res.cookie("token", token, {
-          maxAge: 60 * 60 * 1000,
-          httpOnly: true,
-          secure: process.env.NODE_ENV,
-        });
+        res.cookie("token", token, cookieOptions);
         res.status(201).json({
             firstname: user.firstname,
             role: user.role,
@@ -116,11 +116,8 @@ const adminRegister = async (req, res) => {
         process.env.JWT_KEY,
         { expiresIn: 60 * 60 }
       );
-      res.cookie("token", token, {
-        maxAge: 60 * 60 * 1000,
-        httpOnly: true,
-        secure: process.env.NODE_ENV,
-      });
+      res.cookie("token", token, cookieOptions);
+      
       res.status(201).send("User register Successfully");
     } catch (err) {
       res.status(400).json({ error: "Registration failed" });
