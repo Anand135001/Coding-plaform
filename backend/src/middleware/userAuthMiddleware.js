@@ -5,15 +5,16 @@ const redisClient = require('../config/redis');
 
 const userMiddleware = async (req, res, next) => {
     try {
-        const {token} = req.cookies;
-        if(!token){
-            throw new Error("You do not have access token");
+        const token = req.cookies?.token;;
+        if (!token) {
+          return res.status(401).json({
+            authenticated: false,
+          });
         }
-
         
         // === check redis blacklist === 
-        const IsBlocked = await redisClient.exists(`blacklist:'${token}`);
-        if(IsBlocked){
+        const isBlocked = await redisClient.exists(`blacklist:${token}`);
+        if(isBlocked){
             throw new Error('Invaild token');
         }
 
@@ -29,7 +30,6 @@ const userMiddleware = async (req, res, next) => {
         if(!result){
             throw new Error('User Does not exists');
         }
-
         req.result = result;
         next();
     }
