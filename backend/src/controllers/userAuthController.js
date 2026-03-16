@@ -25,7 +25,7 @@ const register = async(req, res) => {
         const user = await User.create(req.body);
         
         // ==== Token =====
-        const token = jwt.sign({_id:user._id, role:user.role}, process.env.JWT_KEY, {expiresIn: 60*60});
+        const token = jwt.sign({_id:user._id, role:user.role}, process.env.JWT_KEY, {expiresIn:"10h"});
         
         res.cookie('token', token, cookieOptions);
         res.status(200).json({
@@ -60,7 +60,7 @@ const login = async (req, res) => {
         if(!match){
             throw new Error("invaild Credentials"); 
         }
-        const token = jwt.sign({_id:user._id, role:user.role}, process.env.JWT_KEY, {expiresIn: 60*60});
+        const token = jwt.sign({_id:user._id, role:user.role}, process.env.JWT_KEY, {expiresIn:"10h"});
         
         res.cookie("token", token, cookieOptions);
         res.status(201).json({
