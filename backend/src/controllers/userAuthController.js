@@ -1,5 +1,5 @@
 const User = require("../models/userModel");
-const Submission = require('../models/submissisonModel')
+const Submission = require('../models/submissionModel')
 const validate = require('../utils/validator');
 const bcrypt = require('bcrypt');
 const jwt =  require('jsonwebtoken');
