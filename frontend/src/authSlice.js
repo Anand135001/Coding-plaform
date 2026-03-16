@@ -56,6 +56,7 @@ const authSlice = createSlice({
     isAuthenticated: false,
     loading: false,
     error: null,
+    isAuthChecked: false,
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -103,12 +104,14 @@ const authSlice = createSlice({
         state.user = action.payload;
         state.isAuthenticated = !!action.payload;
         state.loading = false;
+        state.isAuthChecked = true;
       })
       .addCase(checkAuth.rejected, (state, action) => {
         state.user = null;
         state.isAuthenticated = false;
         state.loading = false;
         state.error = action.payload?.message || "Something went wrong";
+        state.isAuthChecked = true;
       })
 
       // ==== Logout User Cases ====
