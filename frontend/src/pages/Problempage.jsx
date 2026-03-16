@@ -38,7 +38,6 @@ const ProblemPage = () => {
         // Check if saved code exists in localStorage
         const savedCode = localStorage.getItem(`code_${problemId}`);
         if (savedCode) {
-          console.log("yes")
           // If saved draft exists → load it
           setCode(JSON.parse(savedCode));
         
@@ -121,6 +120,7 @@ const ProblemPage = () => {
       console.error('Error running code:', error);
       setRunResult({
         success: false,
+        testCases: [],     
         error: 'Internal server error'
       });
       setLoading(false);
@@ -422,7 +422,7 @@ const ProblemPage = () => {
                         <p className="text-sm">Memory: {runResult.memory+" KB"}</p>
                         
                         <div className="mt-4 space-y-2">
-                          {runResult.testCases.map((tc, i) => (
+                          {(runResult.testCases || []).map((tc, i) => (
                             <div key={i} className="bg-base-100 p-3 rounded text-xs">
                               <div className="font-mono">
                                 <div><strong>Input:</strong> {tc.stdin}</div>
@@ -440,14 +440,14 @@ const ProblemPage = () => {
                       <div>
                         <h4 className="font-bold">❌ Error</h4>
                         <div className="mt-4 space-y-2">
-                          {runResult.testCases.map((tc, i) => (
+                          {(runResult.testCases || []).map((tc, i) => (
                             <div key={i} className="bg-base-100 p-3 rounded text-xs">
                               <div className="font-mono">
                                 <div><strong>Input:</strong> {tc.stdin}</div>
                                 <div><strong>Expected:</strong> {tc.expected_output}</div>
                                 <div><strong>Output:</strong> {tc.stdout}</div>
-                                <div className={tc.status_id==3 ? 'text-green-600' : 'text-red-600'}>
-                                  {tc.status_id==3 ? '✓ Passed' : '✗ Failed'}
+                                <div className={tc.status?.id==3 ? 'text-green-600' : 'text-red-600'}>
+                                  {tc.status?.id==3 ? '✓ Passed' : '✗ Failed'}
                                 </div>
                               </div>
                             </div>
