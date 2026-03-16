@@ -8,7 +8,7 @@ authRouter.post("/register", register);
 authRouter.post('/login', login);
 authRouter.post("/logout", userMiddleware, logout);
 authRouter.post('/admin/register',adminMiddleware, adminRegister);
-authRouter.delete('profile',  userMiddleware, deleteProfile);
+authRouter.delete('/profile',  userMiddleware, deleteProfile);
 authRouter.get("/check", userMiddleware, check);
 authRouter.get("/profile", userMiddleware ,getProfile);
 
