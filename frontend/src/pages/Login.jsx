@@ -5,13 +5,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router';
 import { useEffect } from 'react';
 import { loginUser } from '../authSlice';
+import { Link } from "react-router-dom";
 
 const loginSchema = z.object({
   emailID: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-function SignUp() {
+function Login() {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -92,7 +93,7 @@ function SignUp() {
                 className={`btn btn-primary w-full ${isSubmitting ? 'loading' : ''}`}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Creating Account...' : 'Sign In'}
+                {isSubmitting ? 'Signing In...' : 'Sign In'}
               </button>
             </div>
           </form>
@@ -101,9 +102,9 @@ function SignUp() {
           <div className="text-center mt-4 w-full">
             <p className="text-sm text-base-content">
               Create a new account?{' '}
-              <a href="/signup" className="link link-primary font-semibold">
-                Sign Up
-              </a>
+              <Link to="/login" className="link link-primary font-semibold">
+                Sign In
+              </Link>
             </p>
           </div>
 
@@ -134,4 +135,4 @@ function SignUp() {
   );
 }
 
-export default SignUp;
+export default Login;
