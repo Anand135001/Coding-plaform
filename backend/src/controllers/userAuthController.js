@@ -32,6 +32,7 @@ const register = async(req, res) => {
           firstname: user.firstname,
           role: user.role,
           _id: user._id,
+          token: token,
           message: "registered successfully",
         });
     }
@@ -64,10 +65,11 @@ const login = async (req, res) => {
         
         res.cookie("token", token, cookieOptions);
         res.status(201).json({
-            firstname: user.firstname,
-            role: user.role,
-            _id: user._id,
-            message:"login successfully"
+          firstname: user.firstname,
+          role: user.role,
+          _id: user._id,
+          token: token,
+          message: "login successfully",
         });
     }
     catch(err){
@@ -80,6 +82,10 @@ const logout = async (req, res) => {
           
     try{
         const {token} = req.cookies;
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith("Bearer ")) {
+          token = authHeader.split(" ")[1];
+        }
         if (!token) return res.status(400).send("No token found");
 
         const decoded = jwt.decode(token);

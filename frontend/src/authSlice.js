@@ -27,10 +27,14 @@ export const loginUser = createAsyncThunk(
 
 export const checkAuth = createAsyncThunk(
   "auth/checkAuth",
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, getState }) => {
     try {
+      const token = getState().auth.token;
+      
+      if(!token) return rejectWithValue(null);
+
       const { data } = await axiosClient.get("/user/check");
-      return data.user;
+      return {...data.user, token};
     } catch (error) {
       return rejectWithValue(error);
     }
@@ -53,6 +57,7 @@ const authSlice = createSlice({
   name: "auth",
   initialState: {
     user: null,
+    token: null,
     isAuthenticated: false,
     loading: false,
     error: null,
@@ -68,6 +73,7 @@ const authSlice = createSlice({
       })
       .addCase(registerUser.fulfilled, (state, action) => {
         state.user = action.payload;
+        state.token = action.payload.token;
         state.isAuthenticated = !!action.payload;
         state.loading = false;
       })
@@ -85,6 +91,7 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.user = action.payload;
+        state.token = action.payload.token;
         state.isAuthenticated = !!action.payload;
         state.loading = false;
       })
@@ -102,6 +109,7 @@ const authSlice = createSlice({
       })
       .addCase(checkAuth.fulfilled, (state, action) => {
         state.user = action.payload;
+        state.token = action.payload.token;
         state.isAuthenticated = !!action.payload;
         state.loading = false;
         state.isAuthChecked = true;
@@ -121,6 +129,7 @@ const authSlice = createSlice({
       })
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null;
+        state.token = null;
         state.isAuthenticated = false;
         state.loading = false;
         state.error = null;
