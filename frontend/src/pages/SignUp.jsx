@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router';
 import { useSelector, useDispatch } from 'react-redux';
 import { useEffect } from 'react';
 import { registerUser } from '../authSlice';
+import { Link } from "react-router-dom";
 
 const signUpSchema = z.object({
   firstname: z.string().min(3, "Name must be at least 3 characters"),
@@ -60,9 +61,9 @@ function SignUp() {
                 placeholder="Enter your first name"
                 className={`input input-bordered w-full ${errors.firstname ? 'input-error' : ''}`}
               />
-              {errors.firstName && (
+              {errors.firstname && (
                 <label className="label">
-                  <span className="label-text-alt text-error">{errors.firstName.message}</span>
+                  <span className="label-text-alt text-error">{errors.firstname.message}</span>
                 </label>
               )}
             </div>
@@ -119,9 +120,9 @@ function SignUp() {
           <div className="text-center mt-4 w-full">
             <p className="text-sm text-base-content">
               Already have an account?{' '}
-              <a href="/login" className="link link-primary font-semibold">
-                Sign In
-              </a>
+              <Link to="/signup" className="link link-primary font-semibold">
+                Sign Up
+              </Link>
             </p>
           </div>
 
