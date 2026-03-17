@@ -120,7 +120,7 @@ function SignUp() {
           <div className="text-center mt-4 w-full">
             <p className="text-sm text-base-content">
               Already have an account?{' '}
-              <Link to="/signup" className="link link-primary font-semibold">
+              <Link to="/login" className="link link-primary font-semibold">
                 Sign Up
               </Link>
             </p>
