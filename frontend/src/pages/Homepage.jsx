@@ -49,7 +49,7 @@ function Homepage() {
       {/* Navigation Bar */}
       <nav className="navbar bg-base-100 shadow-lg px-4">
         <div className="flex-1">
-          <NavLink to="/" className="btn btn-ghost text-xl">LeetCode</NavLink>
+          <NavLink to="/" className="btn btn-ghost text-xl">RootCode</NavLink>
         </div>
         <div className="flex-none gap-4">
           {user && (<NavLink to="/profile" className="btn btn-ghost" > {user.firstname} </NavLink>)}
