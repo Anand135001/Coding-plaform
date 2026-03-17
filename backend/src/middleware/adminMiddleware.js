@@ -4,7 +4,13 @@ const redisClient = require("../config/redis");
 
 const adminMiddleware = async (req, res, next) => {
   try {
-    const { token } = req.cookies;
+    let token = req.cookies?.token;
+    const authHeader = req.headers.authorization;
+    
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.split(" ")[1];
+    }
+
     if (!token) {
       throw new Error("You do not have access token");
     }
