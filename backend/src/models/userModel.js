@@ -45,7 +45,7 @@ const userSchema = new Schema({
         unique:true
     }
 
-}, { timestemps: true })
+}, { timestamps: true })
 
 userSchema.post('findOneAndDelete', async function(userInfo) {
     if(userInfo){
