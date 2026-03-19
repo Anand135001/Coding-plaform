@@ -174,18 +174,31 @@ const getProfile = async (req, res) => {
   try {
     const user = req.result; 
 
-    const submissions = await Submission.find({ userId: user._id });
+    const submissions = await Submission.find({ userId: user._id }).populate('problemId', 'difficulty');
 
     const totalSubmissions = submissions.length;
     const acceptedSubmissions = submissions.filter(
       (s) => s.status === "accepted",
     ).length;
 
-    const solvedProblems = new Set(
+    const solvedMap = new Map();
       submissions
-        .filter((s) => s.status === "accepted")
-        .map((s) => s.problemId.toString()),
-    );
+        .filter((s) => s.status === "accepted" && s.problemId)
+        .forEach((s) => {
+          const id = s.problemId._id.toString();
+          if(!solvedMap.has(id)){
+            solvedMap.set(id, s.problemId.difficulty);
+          }
+        });
+    
+    // count by difficulty
+    let easy = 0, medium = 0, hard = 0;
+    solvedMap.forEach((difficulty) => {
+      if (difficulty === 'easy') easy++;
+      else if (difficulty === 'medium') medium++;
+      else if (difficulty === 'hard') hard++;
+    });
+ 
 
     res.status(200).json({
       user: {
@@ -197,11 +210,12 @@ const getProfile = async (req, res) => {
       stats: {
         totalSubmissions,
         acceptedSubmissions,
-        solvedCount: solvedProblems.size,
+        solvedCount: solvedMap.size,
         successRate:
           totalSubmissions > 0
             ? ((acceptedSubmissions / totalSubmissions) * 100).toFixed(2)
             : 0,
+        difficulty: {easy, medium, hard},    
       },
     });
   } catch (err) {
