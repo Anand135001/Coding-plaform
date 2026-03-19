@@ -4,7 +4,7 @@ const userMiddleware = require("../middleware/userAuthMiddleware");
 const { submitCode, runCode } = require("../controllers/userSubmissionController");
 const rateLimiter = require("../middleware/submitRateLimter");
 
-submitRouter.post("/submit/:id", userMiddleware, rateLimiter(1, 60,"submit"), submitCode);
-submitRouter.post("/run/:id", userMiddleware, rateLimiter(2, 60, "run"), runCode);
+submitRouter.post("/submit/:id", userMiddleware, rateLimiter(1, 15,"submit"), submitCode);
+submitRouter.post("/run/:id", userMiddleware, rateLimiter(2, 20, "run"), runCode);
 
 module.exports = submitRouter;
