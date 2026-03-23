@@ -1,10 +1,34 @@
-import { useState, useEffect } from 'react';
-import axiosClient from '../utils/axiosClient';
+import { useState, useEffect } from "react";
+import axiosClient from "../utils/axiosClient";
+
+const statusConfig = {
+  accepted: { label: "Accepted", color: "var(--green)",  bg: "rgba(34,197,94,0.10)",  border: "rgba(34,197,94,0.20)"  },
+  wrong:    { label: "Wrong",    color: "var(--red)",    bg: "rgba(239,68,68,0.10)",  border: "rgba(239,68,68,0.20)"  },
+  error:    { label: "Error",    color: "var(--yellow)", bg: "rgba(234,179,8,0.10)",  border: "rgba(234,179,8,0.20)"  },
+  pending:  { label: "Pending",  color: "var(--accent)", bg: "var(--accent-glow)",    border: "rgba(59,130,246,0.20)" },
+};
+
+const StatusBadge = ({ status }) => {
+  const cfg = statusConfig[status] || { label: status, color: "var(--text-muted)", bg: "var(--surface-3)", border: "var(--border)" };
+  return (
+    <span style={{
+      fontSize: "11px", fontWeight: 600, letterSpacing: "0.04em",
+      color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}`,
+      padding: "2px 10px", borderRadius: "99px", textTransform: "capitalize",
+    }}>
+      {cfg.label}
+    </span>
+  );
+};
+
+const formatMemory = (memory) => memory < 1024 ? `${memory} KB` : `${(memory / 1024).toFixed(1)} MB`;
+const formatDate   = (d) => new Date(d).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+const langLabel    = (l) => ({ javascript: "JS", java: "Java", cpp: "C++" }[l?.toLowerCase()] || l);
 
 const SubmissionHistory = ({ problemId }) => {
-  const [submissions, setSubmissions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [submissions, setSubmissions]         = useState([]);
+  const [loading, setLoading]                 = useState(true);
+  const [error, setError]                     = useState(null);
   const [selectedSubmission, setSelectedSubmission] = useState(null);
 
   useEffect(() => {
@@ -15,169 +39,162 @@ const SubmissionHistory = ({ problemId }) => {
         setSubmissions(response.data);
         setError(null);
       } catch (err) {
-        setError('Failed to fetch submission history');
+        setError("Failed to fetch submission history.");
         console.error(err);
       } finally {
         setLoading(false);
       }
     };
-
     fetchSubmissions();
   }, [problemId]);
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'accepted': return 'badge-success';
-      case 'wrong': return 'badge-error';
-      case 'error': return 'badge-warning';
-      case 'pending': return 'badge-info';
-      default: return 'badge-neutral';
-    }
-  };
+  if (loading) return (
+    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "160px" }}>
+      <div style={{ width: "28px", height: "28px", borderRadius: "50%", border: "2px solid var(--surface-3)", borderTop: "2px solid var(--accent)", animation: "spin 0.8s linear infinite" }} />
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
 
-  const formatMemory = (memory) => {
-    if (memory < 1024) return `${memory} kB`;
-    return `${(memory / 1024).toFixed(2)} MB`;
-  };
+  if (error) return (
+    <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "14px 16px", background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "10px", color: "var(--red)", fontSize: "13px" }}>
+      ⚠ {error}
+    </div>
+  );
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString();
-  };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <span className="loading loading-spinner loading-lg"></span>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="alert alert-error shadow-lg my-4">
-        <div>
-          <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span>{error}</span>
-        </div>
-      </div>
-    );
-  }
+  if (submissions.length === 0) return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "10px", padding: "48px 20px", background: "var(--surface-1)", border: "1px solid var(--border)", borderRadius: "12px", color: "var(--text-muted)" }}>
+      <span style={{ fontSize: "28px", opacity: 0.4 }}>↑</span>
+      <p style={{ fontSize: "13.5px" }}>No submissions yet for this problem.</p>
+    </div>
+  );
 
   return (
-    <div className="container mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-6 text-center">Submission History</h2>
-      
-      {submissions.length === 0 ? (
-        <div className="alert alert-info shadow-lg">
-          <div>
-            <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            <span>No submissions found for this problem</span>
-          </div>
+    <>
+      {/* Count */}
+      <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "12px" }}>
+        {submissions.length} submission{submissions.length !== 1 ? "s" : ""}
+      </p>
+
+      {/* Table */}
+      <div style={{ background: "var(--surface-1)", border: "1px solid var(--border)", borderRadius: "10px", overflow: "hidden" }}>
+        {/* Header */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "36px 70px 100px 80px 80px 80px 1fr 60px",
+          gap: "0",
+          padding: "9px 14px",
+          background: "var(--surface-2)",
+          borderBottom: "1px solid var(--border)",
+        }}>
+          {["#", "Lang", "Status", "Runtime", "Memory", "Cases", "Submitted", ""].map((h) => (
+            <span key={h} style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-muted)", letterSpacing: "0.05em", textTransform: "uppercase" }}>{h}</span>
+          ))}
         </div>
-      ) : (
-        <>
-          <div className="overflow-x-auto">
-            <table className="table table-zebra w-full">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Language</th>
-                  <th>Status</th>
-                  <th>Runtime</th>
-                  <th>Memory</th>
-                  <th>Test Cases</th>
-                  <th>Submitted</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {submissions.map((sub, index) => (
-                  <tr key={sub._id}>
-                    <td>{index + 1}</td>
-                    <td className="font-mono">{sub.language}</td>
-                    <td>
-                      <span className={`badge ${getStatusColor(sub.status)}`}>
-                        {sub.status.charAt(0).toUpperCase() + sub.status.slice(1)}
-                      </span>
-                    </td>
-                    
-                    <td className="font-mono">{sub.runtime}sec</td>
-                    <td className="font-mono">{formatMemory(sub.memory)}</td>
-                    <td className="font-mono">{sub.testCasesPassed}/{sub.testCasesTotal}</td>
-                    <td>{formatDate(sub.createdAt)}</td>
-                    <td>
-                      <button 
-                        className="btn btn-s btn-outline"
-                        onClick={() => setSelectedSubmission(sub)}
-                      >
-                        Code
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+
+        {/* Rows */}
+        {submissions.map((sub, index) => (
+          <div
+            key={sub._id}
+            style={{
+              display: "grid",
+              gridTemplateColumns: "36px 70px 100px 80px 80px 80px 1fr 60px",
+              gap: "0",
+              padding: "11px 14px",
+              borderBottom: index < submissions.length - 1 ? "1px solid var(--border)" : "none",
+              alignItems: "center",
+              transition: "background 0.15s",
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = "var(--surface-2)"}
+            onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+          >
+            <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>{index + 1}</span>
+            <span className="mono" style={{ fontSize: "12px", color: "var(--text-primary)", background: "var(--surface-3)", padding: "2px 8px", borderRadius: "5px", display: "inline-block" }}>
+              {langLabel(sub.language)}
+            </span>
+            <span><StatusBadge status={sub.status} /></span>
+            <span className="mono" style={{ fontSize: "12px", color: "var(--text-secondary)" }}>{sub.runtime}s</span>
+            <span className="mono" style={{ fontSize: "12px", color: "var(--text-secondary)" }}>{formatMemory(sub.memory)}</span>
+            <span className="mono" style={{ fontSize: "12px", color: "var(--text-secondary)" }}>{sub.testCasesPassed}/{sub.testCasesTotal}</span>
+            <span style={{ fontSize: "11.5px", color: "var(--text-muted)" }}>{formatDate(sub.createdAt)}</span>
+            <button
+              onClick={() => setSelectedSubmission(sub)}
+              style={{
+                fontSize: "11.5px", fontWeight: 500,
+                color: "var(--accent)", background: "var(--accent-glow)",
+                border: "1px solid rgba(59,130,246,0.2)",
+                borderRadius: "6px", padding: "4px 10px",
+                cursor: "pointer", transition: "opacity 0.15s",
+              }}
+              onMouseEnter={e => e.currentTarget.style.opacity = "0.75"}
+              onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+            >
+              View
+            </button>
           </div>
+        ))}
+      </div>
 
-          <p className="mt-4 text-sm text-gray-500">
-            Showing {submissions.length} submissions
-          </p>
-        </>
-      )}
-
-      {/* Code View Modal */}
+      {/* Modal */}
       {selectedSubmission && (
-        <div className="modal modal-open">
-          <div className="modal-box w-11/12 max-w-5xl">
-            <h3 className="font-bold text-lg mb-4">
-              Submission Details: {selectedSubmission.language}
-            </h3>
-            
-            <div className="mb-4">
-              <div className="flex flex-wrap gap-2 mb-2">
-                <span className={`badge ${getStatusColor(selectedSubmission.status)}`}>
-                  {selectedSubmission.status}
-                </span>
-                <span className="badge badge-outline">
-                  Runtime: {selectedSubmission.runtime}s
-                </span>
-                <span className="badge badge-outline">
-                  Memory: {formatMemory(selectedSubmission.memory)}
-                </span>
-                <span className="badge badge-outline">
-                  Passed: {selectedSubmission.testCasesPassed}/{selectedSubmission.testCasesTotal}
-                </span>
+        <div
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
+          onClick={() => setSelectedSubmission(null)}
+        >
+          <div
+            style={{ background: "var(--surface-1)", border: "1px solid var(--border)", borderRadius: "14px", width: "100%", maxWidth: "760px", maxHeight: "85vh", display: "flex", flexDirection: "column", overflow: "hidden" }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Modal header */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 20px", borderBottom: "1px solid var(--border)", background: "var(--surface-2)", flexShrink: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <span style={{ fontSize: "14px", fontWeight: 700, color: "var(--text-primary)" }}>Submission</span>
+                <StatusBadge status={selectedSubmission.status} />
+                <span className="mono" style={{ fontSize: "12px", color: "var(--text-muted)", background: "var(--surface-3)", padding: "2px 8px", borderRadius: "5px" }}>{langLabel(selectedSubmission.language)}</span>
               </div>
-              
-              {selectedSubmission.errorMessage && (
-                <div className="alert alert-error mt-2">
-                  <div>
-                    <span>{selectedSubmission.errorMessage}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            <pre className="p-4 bg-gray-900 text-gray-100 rounded overflow-x-auto">
-              <code>{selectedSubmission.code}</code>
-            </pre>
-            
-            <div className="modal-action">
-              <button 
-                className="btn"
+              <button
                 onClick={() => setSelectedSubmission(null)}
-              >
-                Close
-              </button>
+                style={{ width: "28px", height: "28px", borderRadius: "6px", background: "var(--surface-3)", border: "none", cursor: "pointer", color: "var(--text-muted)", fontSize: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}
+              >×</button>
+            </div>
+
+            {/* Stats row */}
+            <div style={{ display: "flex", gap: "8px", padding: "12px 20px", borderBottom: "1px solid var(--border)", flexShrink: 0, flexWrap: "wrap" }}>
+              {[
+                ["Runtime", `${selectedSubmission.runtime}s`],
+                ["Memory", formatMemory(selectedSubmission.memory)],
+                ["Cases", `${selectedSubmission.testCasesPassed}/${selectedSubmission.testCasesTotal}`],
+                ["Submitted", formatDate(selectedSubmission.createdAt)],
+              ].map(([k, v]) => (
+                <div key={k} style={{ display: "flex", flexDirection: "column", background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: "8px", padding: "7px 14px", gap: "2px" }}>
+                  <span className="mono" style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)" }}>{v}</span>
+                  <span style={{ fontSize: "10px", color: "var(--text-muted)", letterSpacing: "0.04em", textTransform: "uppercase" }}>{k}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Error */}
+            {selectedSubmission.errorMessage && (
+              <div style={{ margin: "12px 20px 0", padding: "12px 14px", background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "8px", flexShrink: 0 }}>
+                <div style={{ fontSize: "11px", fontWeight: 600, color: "var(--red)", marginBottom: "6px", letterSpacing: "0.05em", textTransform: "uppercase" }}>Error</div>
+                <pre className="mono" style={{ fontSize: "12px", color: "#fca5a5", whiteSpace: "pre-wrap", lineHeight: 1.6, margin: 0 }}>{selectedSubmission.errorMessage}</pre>
+              </div>
+            )}
+
+            {/* Code */}
+            <div className="custom-scroll" style={{ flex: 1, overflowY: "auto", margin: "12px 20px 20px" }}>
+              <div style={{ background: "var(--surface-0)", border: "1px solid var(--border)", borderRadius: "10px", overflow: "hidden" }}>
+                <div style={{ padding: "8px 14px", borderBottom: "1px solid var(--border)", background: "var(--surface-2)", fontSize: "11px", fontWeight: 600, color: "var(--text-muted)", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+                  Source Code
+                </div>
+                <pre className="mono custom-scroll" style={{ padding: "16px", fontSize: "12.5px", color: "var(--text-secondary)", overflowX: "auto", margin: 0, lineHeight: 1.7 }}>
+                  <code>{selectedSubmission.code}</code>
+                </pre>
+              </div>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 
