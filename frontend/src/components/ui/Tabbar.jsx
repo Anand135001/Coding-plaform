@@ -9,10 +9,9 @@ const TabBar = ({ tabs, active, onChange }) => (
     overflowX: 'auto',
     overflowY: 'hidden',
     WebkitOverflowScrolling: 'touch',
-    scrollbarWidth: 'none',        
-    msOverflowStyle: 'none',    
+    scrollbarWidth: 'none',
+    msOverflowStyle: 'none',
   }}>
-    
     <style>{`.tabbar-hide-scroll::-webkit-scrollbar { display: none; }`}</style>
 
     <div
@@ -20,8 +19,8 @@ const TabBar = ({ tabs, active, onChange }) => (
       style={{
         display: 'flex',
         alignItems: 'stretch',
-        flexDirection: 'row',   
-        flexWrap: 'nowrap',    
+        flexDirection: 'row',
+        flexWrap: 'nowrap',
         flex: 1,
         minWidth: 0,
       }}
@@ -38,16 +37,14 @@ const TabBar = ({ tabs, active, onChange }) => (
               fontSize: '12.5px',
               fontWeight: isActive ? 600 : 400,
               color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
-              borderBottom: isActive ? '2px solid var(--accent)' : '2px solid transparent',
               background: 'transparent',
-              border: 'none',
               borderBottom: isActive ? '2px solid var(--accent)' : '2px solid transparent',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               gap: '5px',
               whiteSpace: 'nowrap',
-              flexShrink: 0,           
+              flexShrink: 0,
               letterSpacing: '0.01em',
               transition: 'color 0.15s',
               fontFamily: 'inherit',
