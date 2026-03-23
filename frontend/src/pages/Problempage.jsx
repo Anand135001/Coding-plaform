@@ -6,7 +6,7 @@ import axiosClient from '../utils/axiosClient';
 import SubmissionHistory from '../components/SubmissionHistory';
 import Chatbot from '../components/ChatbBot';
 import Editorial from '../components/EditorialVideo';
-import TabBar from '../components/ui/TabBar';
+import TabBar from '../components/ui/Tabbar';
 import { DifficultyBadge, TagBadge, StatusBadge } from '../components/ui/Badges';
 import { StatChip, PageLoader } from '../components/ui/Ui';
 import '../styles/theme.css';
