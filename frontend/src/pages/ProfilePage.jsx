@@ -1,25 +1,53 @@
-import { useEffect, useState } from "react";
-import axiosClient from "../utils/axiosClient";
-import { useDispatch, useSelector } from "react-redux";
-import { logoutUser } from "../authSlice";
-import { useNavigate, NavLink } from "react-router";
-import { LogOut, Settings, Code2, CheckCircle, XCircle, Clock, Trophy, Flame, BarChart2 } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { NavLink, useNavigate } from 'react-router';
+import { useDispatch, useSelector } from 'react-redux';
+import { LogOut, CheckCircle, XCircle, Trophy, Flame, BarChart2 } from 'lucide-react';
+import axiosClient from '../utils/axiosClient';
+import { logoutUser } from '../authSlice';
+import Navbar from '../components/ui/Navbar';
+import { SectionCard, SectionLabel, ProgressBar, PageLoader } from '../components/ui/Ui';
+import '../styles/theme.css';
+
+/* ── Page-specific styles ── */
+const styles = `
+  .pp-grid {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 16px;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 28px 16px 60px;
+    align-items: start;
+  }
+  .pp-stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .logout-btn { transition: background 0.15s, color 0.15s, border-color 0.15s; }
+  .logout-btn:hover { background: rgba(239,68,68,0.12) !important; color: var(--red) !important; border-color: rgba(239,68,68,0.3) !important; }
+  .admin-btn  { transition: background 0.15s, border-color 0.15s; }
+  .admin-btn:hover  { background: var(--accent-glow) !important; border-color: rgba(59,130,246,0.4) !important; }
+
+  @media (max-width: 720px) {
+    .pp-grid { grid-template-columns: 1fr; }
+  }
+`;
 
 function ProfilePage() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user } = useSelector(state => state.auth);
+  const { user }  = useSelector(state => state.auth);
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await axiosClient.get("/user/profile");
+        const response = await axiosClient.get('/user/profile');
         setProfile(response.data);
-      } catch (error) {
-        console.error("Profile fetch error:", error);
+      } catch (err) {
+        console.error('Profile fetch error:', err);
       } finally {
         setLoading(false);
       }
@@ -27,233 +55,186 @@ function ProfilePage() {
     fetchProfile();
   }, []);
 
-  const handleLogout = () => {
-    dispatch(logoutUser());
-    navigate("/login");
-  };
+  const handleLogout = () => { dispatch(logoutUser()); navigate('/login'); };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-base-300">
-        <span className="loading loading-spinner loading-lg text-primary"></span>
-      </div>
-    );
-  }
+  if (loading) return <PageLoader label="Loading profile…" />;
 
   const successRate = parseFloat(profile?.stats?.successRate || 0);
-  const solved = profile?.stats?.solvedCount || 0;
-  const total = profile?.stats?.totalSubmissions || 0;
-  const accepted = profile?.stats?.acceptedSubmissions || 0;
-  const failed = total - accepted;
+  const solved      = profile?.stats?.solvedCount           || 0;
+  const total       = profile?.stats?.totalSubmissions      || 0;
+  const accepted    = profile?.stats?.acceptedSubmissions   || 0;
+  const failed      = total - accepted;
+  const easyCount   = profile?.stats?.difficulty?.easy      || 0;
+  const medCount    = profile?.stats?.difficulty?.medium    || 0;
+  const hardCount   = profile?.stats?.difficulty?.hard      || 0;
 
-  // Circular progress helper
-  const radius = 54;
+  // SVG ring
+  const radius      = 52;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (successRate / 100) * circumference;
+  const ringOffset  = circumference - (successRate / 100) * circumference;
+
+  /* ── Navbar right slot ── */
+  const navRight = (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      {user?.role === 'admin' && (
+        <NavLink to="/admin" className="admin-btn nav-link-ui" style={{ fontSize: '12.5px', fontWeight: 500, color: 'var(--accent)', background: 'var(--accent-glow)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: '7px', padding: '5px 13px' }}>
+          Admin Panel
+        </NavLink>
+      )}
+      <button onClick={handleLogout} className="logout-btn" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12.5px', fontWeight: 500, color: 'var(--text-muted)', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: '7px', padding: '5px 13px', cursor: 'pointer' }}>
+        <LogOut size={13} /> Logout
+      </button>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-base-300">
+    <div style={{ minHeight: '100dvh', background: 'var(--surface-0)', color: 'var(--text-primary)' }}>
+      <style>{styles}</style>
 
-      {/* Top Nav */}
-      <div className="bg-base-100 border-b border-base-300 px-6 py-3 flex items-center justify-between">
-        <NavLink to="/" className="flex items-center gap-2 text-primary font-bold text-xl">
-          <Code2 size={22} />
-          CodeRoots
-        </NavLink>
-        <div className="flex items-center gap-3">
-          {user?.role === "admin" && (
-            <NavLink to="/admin" className="btn btn-sm btn-outline btn-primary">
-              Admin Panel
-            </NavLink>
-          )}
-          <button onClick={handleLogout} className="btn btn-sm btn-error btn-outline flex items-center gap-1">
-            <LogOut size={14} />
-            Logout
-          </button>
-        </div>
-      </div>
+      <Navbar right={navRight} />
 
-      <div className="max-w-5xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="pp-grid fade-in">
 
-        {/* Left Column — User Card */}
-        <div className="md:col-span-1 flex flex-col gap-4">
+        {/* ══ LEFT COLUMN ══ */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
-          {/* Avatar + Info */}
-          <div className="bg-base-100 rounded-2xl p-6 flex flex-col items-center text-center gap-3 border border-base-300">
-            <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center text-primary-content text-3xl font-bold shadow-md">
-              {profile.user.name[0].toUpperCase()}
-            </div>
-            <div>
-              <h2 className="text-xl font-bold">{profile.user.name}</h2>
-              <p className="text-sm text-gray-500 mt-0.5">{profile.user.email}</p>
-            </div>
-            <div className="flex gap-2 flex-wrap justify-center">
-              <span className="badge badge-primary badge-outline capitalize">{profile.user.role}</span>
-              <span className="badge badge-ghost text-xs">
-                Joined {new Date(profile.user.joinedAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
-              </span>
-            </div>
-          </div>
-
-          {/* Success Rate Ring */}
-          <div className="bg-base-100 rounded-2xl p-6 flex flex-col items-center gap-3 border border-base-300">
-            <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Success Rate</p>
-            <div className="relative w-36 h-36">
-              <svg viewBox="0 0 128 128" className="w-full h-full -rotate-90">
-                <circle cx="64" cy="64" r={radius} fill="none" stroke="currentColor" strokeWidth="10" className="text-base-300" />
-                <circle
-                  cx="64" cy="64" r={radius} fill="none"
-                  stroke="currentColor" strokeWidth="10"
-                  strokeDasharray={circumference}
-                  strokeDashoffset={offset}
-                  strokeLinecap="round"
-                  className="text-primary transition-all duration-700"
-                />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-2xl font-bold">{successRate}%</span>
-                <span className="text-xs text-gray-500">success</span>
+          {/* Avatar card */}
+          <SectionCard>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px', textAlign: 'center' }}>
+              <div style={{
+                width: '72px', height: '72px', borderRadius: '50%',
+                background: 'linear-gradient(135deg, var(--accent), #8b5cf6)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '28px', fontWeight: 700, color: '#fff',
+                border: '3px solid var(--surface-3)',
+              }}>
+                {profile.user.name?.[0]?.toUpperCase()}
+              </div>
+              <div>
+                <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>{profile.user.name}</h2>
+                <p style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>{profile.user.email}</p>
+              </div>
+              <div style={{ display: 'flex', gap: '7px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--accent)', background: 'var(--accent-glow)', border: '1px solid rgba(59,130,246,0.2)', padding: '2px 10px', borderRadius: '99px', textTransform: 'capitalize' }}>
+                  {profile.user.role}
+                </span>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)', background: 'var(--surface-2)', border: '1px solid var(--border)', padding: '2px 10px', borderRadius: '99px' }}>
+                  Joined {new Date(profile.user.joinedAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                </span>
               </div>
             </div>
-            <div className="flex gap-4 text-sm w-full justify-center">
-              <div className="flex items-center gap-1 text-success">
-                <CheckCircle size={14} />
-                <span>{accepted} passed</span>
+          </SectionCard>
+
+          {/* Success rate ring */}
+          <SectionCard>
+            <SectionLabel>Success Rate</SectionLabel>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px' }}>
+              <div style={{ position: 'relative', width: '130px', height: '130px' }}>
+                <svg viewBox="0 0 128 128" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
+                  <circle cx="64" cy="64" r={radius} fill="none" stroke="var(--surface-3)" strokeWidth="9" />
+                  <circle
+                    className="ring-animate"
+                    cx="64" cy="64" r={radius}
+                    fill="none" stroke="var(--accent)" strokeWidth="9" strokeLinecap="round"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={circumference}
+                    style={{ '--ring-full': circumference, '--ring-offset': ringOffset }}
+                  />
+                </svg>
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                  <span className="mono" style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)' }}>{successRate}%</span>
+                  <span style={{ fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.04em' }}>success</span>
+                </div>
               </div>
-              <div className="flex items-center gap-1 text-error">
-                <XCircle size={14} />
-                <span>{failed} failed</span>
+              <div style={{ display: 'flex', gap: '18px' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12.5px', color: 'var(--green)' }}>
+                  <CheckCircle size={13} /> {accepted} passed
+                </span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12.5px', color: 'var(--red)' }}>
+                  <XCircle size={13} /> {failed} failed
+                </span>
               </div>
             </div>
-          </div>
-
+          </SectionCard>
         </div>
 
-        {/* Right Column */}
-        <div className="md:col-span-2 flex flex-col gap-4">
+        {/* ══ RIGHT COLUMN ══ */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
-          {/* Stats Row */}
-          <div className="grid grid-cols-3 gap-4">
-            <div className="bg-base-100 rounded-2xl p-5 border border-base-300 flex flex-col gap-1">
-              <div className="flex items-center gap-2 text-success mb-1">
-                <Trophy size={16} />
-                <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Solved</span>
-              </div>
-              <span className="text-3xl font-bold text-success">{solved}</span>
-              <span className="text-xs text-gray-500">problems</span>
-            </div>
-
-            <div className="bg-base-100 rounded-2xl p-5 border border-base-300 flex flex-col gap-1">
-              <div className="flex items-center gap-2 mb-1">
-                <BarChart2 size={16} className="text-primary" />
-                <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Submissions</span>
-              </div>
-              <span className="text-3xl font-bold">{total}</span>
-              <span className="text-xs text-gray-500">total attempts</span>
-            </div>
-
-            <div className="bg-base-100 rounded-2xl p-5 border border-base-300 flex flex-col gap-1">
-              <div className="flex items-center gap-2 mb-1">
-                <Flame size={16} className="text-orange-400" />
-                <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Accepted</span>
-              </div>
-              <span className="text-3xl font-bold text-primary">{accepted}</span>
-              <span className="text-xs text-gray-500">correct solutions</span>
-            </div>
+          {/* Stats row */}
+          <div className="pp-stats-row">
+            {[
+              { icon: <Trophy size={14} />,   label: 'Solved',      value: solved,    color: 'var(--green)',        sub: 'problems' },
+              { icon: <BarChart2 size={14} />, label: 'Submissions', value: total,     color: 'var(--text-primary)', sub: 'attempts' },
+              { icon: <Flame size={14} />,     label: 'Accepted',    value: accepted,  color: 'var(--accent)',       sub: 'correct'  },
+            ].map(({ icon, label, value, color, sub }) => (
+              <SectionCard key={label} style={{ padding: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
+                  <span style={{ color }}>{icon}</span>
+                  <span style={{ fontSize: '10.5px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>{label}</span>
+                </div>
+                <span className="mono" style={{ fontSize: 'clamp(22px,4vw,28px)', fontWeight: 700, color, display: 'block', lineHeight: 1 }}>{value}</span>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px', display: 'block' }}>{sub}</span>
+              </SectionCard>
+            ))}
           </div>
 
-          {/* Submission Bar Chart */}
-          <div className="bg-base-100 rounded-2xl p-6 border border-base-300">
-            <h3 className="font-semibold text-sm uppercase tracking-wide text-gray-500 mb-4">Submission Overview</h3>
-            <div className="space-y-3">
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-success flex items-center gap-1"><CheckCircle size={13} /> Accepted</span>
-                  <span className="font-semibold">{accepted}</span>
+          {/* Submission overview */}
+          <SectionCard>
+            <SectionLabel>Submission Overview</SectionLabel>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {[
+                { icon: <CheckCircle size={12} />, label: 'Accepted',     count: accepted, color: 'var(--green)', textColor: 'var(--green)' },
+                { icon: <XCircle size={12} />,     label: 'Wrong Answer', count: failed,   color: 'var(--red)',   textColor: 'var(--red)'   },
+              ].map(({ icon, label, count, color, textColor }) => (
+                <div key={label}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '7px' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12.5px', color: textColor }}>{icon} {label}</span>
+                    <span className="mono" style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--text-secondary)' }}>{count}</span>
+                  </div>
+                  <ProgressBar value={count} max={total} color={color} />
                 </div>
-                <div className="w-full bg-base-300 rounded-full h-2.5">
-                  <div
-                    className="bg-success h-2.5 rounded-full transition-all duration-700"
-                    style={{ width: total > 0 ? `${(accepted / total) * 100}%` : "0%" }}
-                  ></div>
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-error flex items-center gap-1"><XCircle size={13} /> Wrong Answer</span>
-                  <span className="font-semibold">{failed}</span>
-                </div>
-                <div className="w-full bg-base-300 rounded-full h-2.5">
-                  <div
-                    className="bg-error h-2.5 rounded-full transition-all duration-700"
-                    style={{ width: total > 0 ? `${(failed / total) * 100}%` : "0%" }}
-                  ></div>
-                </div>
-              </div>
+              ))}
             </div>
-          </div>
+          </SectionCard>
 
-          {/* Problems Solved Breakdown — Real Data */}
-          <div className="bg-base-100 rounded-2xl p-6 border border-base-300">
-            <h3 className="font-semibold text-sm uppercase tracking-wide text-gray-500 mb-4">Problems Solved</h3>
-            <div className="flex items-center gap-6">
-          
-              {/* Total */}
-              <div className="flex flex-col items-center min-w-fit">
-                <span className="text-4xl font-bold text-success">{solved}</span>
-                <span className="text-xs text-gray-500 mt-1">Total Solved</span>
+          {/* Problems solved breakdown */}
+          <SectionCard>
+            <SectionLabel>Problems Solved</SectionLabel>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+                <span className="mono" style={{ fontSize: '40px', fontWeight: 700, color: 'var(--green)', lineHeight: 1 }}>{solved}</span>
+                <span style={{ fontSize: '10.5px', color: 'var(--text-muted)', letterSpacing: '0.04em', marginTop: '4px' }}>TOTAL</span>
               </div>
-          
-              {/* Easy / Medium / Hard cards */}
-              <div className="flex-1 grid grid-cols-3 gap-3">
+              <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px' }}>
                 {[
-                  {
-                    label: "Easy",
-                    count: profile.stats.difficulty?.easy || 0,
-                    color: "text-success border-success"
-                  },
-                  {
-                    label: "Medium",
-                    count: profile.stats.difficulty?.medium || 0,
-                    color: "text-warning border-warning"
-                  },
-                  {
-                    label: "Hard",
-                    count: profile.stats.difficulty?.hard || 0,
-                    color: "text-error border-error"
-                  },
-                ].map(({ label, count, color }) => (
-                  <div key={label} className={`rounded-xl border p-3 text-center ${color}`}>
-                    <div className="text-xl font-bold">{count}</div>
-                    <div className="text-xs mt-1 opacity-70">{label}</div>
+                  { label: 'Easy',   count: easyCount, color: 'var(--green)',  border: 'rgba(34,197,94,0.20)',  bg: 'rgba(34,197,94,0.06)'  },
+                  { label: 'Medium', count: medCount,  color: 'var(--yellow)', border: 'rgba(234,179,8,0.20)',  bg: 'rgba(234,179,8,0.06)'  },
+                  { label: 'Hard',   count: hardCount, color: 'var(--red)',    border: 'rgba(239,68,68,0.20)',  bg: 'rgba(239,68,68,0.06)'  },
+                ].map(({ label, count, color, border, bg }) => (
+                  <div key={label} style={{ background: bg, border: `1px solid ${border}`, borderRadius: '9px', padding: '10px 8px', textAlign: 'center' }}>
+                    <span className="mono" style={{ fontSize: '20px', fontWeight: 700, color, display: 'block', lineHeight: 1 }}>{count}</span>
+                    <span style={{ fontSize: '10.5px', color, opacity: 0.75, marginTop: '4px', display: 'block', letterSpacing: '0.04em' }}>{label}</span>
                   </div>
                 ))}
               </div>
             </div>
-          
-            {/* Progress bars */}
-            <div className="mt-4 space-y-2">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {[
-                { label: "Easy", count: profile.stats.difficulty?.easy || 0, color: "bg-success" },
-                { label: "Medium", count: profile.stats.difficulty?.medium || 0, color: "bg-warning" },
-                { label: "Hard", count: profile.stats.difficulty?.hard || 0, color: "bg-error" },
+                { label: 'Easy',   count: easyCount, color: 'var(--green)'  },
+                { label: 'Medium', count: medCount,  color: 'var(--yellow)' },
+                { label: 'Hard',   count: hardCount, color: 'var(--red)'    },
               ].map(({ label, count, color }) => (
                 <div key={label}>
-                  <div className="flex justify-between text-xs text-gray-500 mb-1">
-                    <span>{label}</span>
-                    <span>{count} solved</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{label}</span>
+                    <span className="mono" style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{count} solved</span>
                   </div>
-                  <div className="w-full bg-base-300 rounded-full h-1.5">
-                    <div
-                      className={`${color} h-1.5 rounded-full transition-all duration-700`}
-                      style={{ width: solved > 0 ? `${(count / solved) * 100}%` : "0%" }}
-                    ></div>
-                  </div>
+                  <ProgressBar value={count} max={solved || 1} color={color} />
                 </div>
               ))}
             </div>
-          </div>
+          </SectionCard>
 
         </div>
       </div>
