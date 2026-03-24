@@ -11,6 +11,7 @@ import { DifficultyBadge, TagBadge, StatusBadge } from '../components/ui/Badges'
 import { StatChip, PageLoader } from '../components/ui/Ui';
 import '../styles/theme.css';
 
+
 /* ── Page-specific styles ── */
 const styles = `
   .prob-page { height: 100dvh; display: flex; flex-direction: column; background: var(--surface-0); color: var(--text-primary); overflow: hidden; }
@@ -34,6 +35,7 @@ const styles = `
     .editor-wrap { height: 50vw !important; min-height: 220px !important; max-height: 360px !important; flex: none !important; }
   }
 `;
+
 
 /* ── TestCaseCard ── */
 const TestCaseCard = ({ tc, index, passed }) => (
@@ -60,11 +62,13 @@ const TestCaseCard = ({ tc, index, passed }) => (
   </div>
 );
 
+
 /* ── Main Page ── */
 const ProblemPage = () => {
   const [problem, setProblem]               = useState(null);
   const [selectedLanguage, setSelectedLanguage] = useState('javascript');
   const [code, setCode]                     = useState({ javascript: '', java: '', cpp: '' });
+  const [defaultCode, setDefaultCode]       = useState({javascript: '', java: '', cpp: ''});
   const [loading, setLoading]               = useState(false);
   const [runResult, setRunResult]           = useState(null);
   const [submitResult, setSubmitResult]     = useState(null);
@@ -75,62 +79,105 @@ const ProblemPage = () => {
   const { problemId } = useParams();
   const { handleSubmit } = useForm();
 
+
   useEffect(() => {
     const fetchProblem = async () => {
       setLoading(true);
+  
       try {
         const response = await axiosClient.get(`/problem/problemById/${problemId}`);
         setProblem(response.data);
+  
+        const defaultCodeMap = { javascript: '', java: '', cpp: '' };
+        
+        response.data.startCode.forEach(sc => {
+          const lang = sc.language.toLowerCase(); 
+          if (lang === 'c++') defaultCodeMap.cpp = sc.initialCode;
+          else if (lang === 'javascript') defaultCodeMap.javascript = sc.initialCode;
+          else if (lang === 'java') defaultCodeMap.java = sc.initialCode;
+        });
+        setDefaultCode(defaultCodeMap);
+
         const savedCode = localStorage.getItem(`code_${problemId}`);
+  
         if (savedCode) {
           setCode(JSON.parse(savedCode));
         } else {
-          const m = { javascript: '', java: '', cpp: '' };
-          response.data.startCode.forEach(sc => {
-            const lang = sc.language.toLowerCase();
-            if (lang === 'c++')         m.cpp        = sc.initialCode;
-            else if (lang === 'javascript') m.javascript = sc.initialCode;
-            else if (lang === 'java')    m.java       = sc.initialCode;
-          });
-          setCode(m);
+          setCode(defaultCodeMap);
         }
       } catch (err) {
         console.error('Error fetching problem:', err);
       } finally {
         setLoading(false);
       }
-    };
+    };  
     fetchProblem();
   }, [problemId]);
 
-  const handleEditorChange = (value) => setCode(prev => ({ ...prev, [selectedLanguage]: value || '' }));
+
+
+  const handleResetCode = () => {
+    if (!window.confirm("Reset code to default?")) return;
+
+    setCode(prev => {
+    const updated = { ...prev, [selectedLanguage]: defaultCode[selectedLanguage] || ''};
+
+    localStorage.setItem(`code_${problemId}`, JSON.stringify(updated));  
+    return updated; 
+    });
+  }
+  
+
+  const handleEditorChange = (value) => {
+    setCode(prev =>({ ...prev,[selectedLanguage]: value || '' }));
+  }
+  
 
   useEffect(() => {
-    const hasCode = code.javascript?.trim() || code.java?.trim() || code.cpp?.trim();
-    if (hasCode) localStorage.setItem(`code_${problemId}`, JSON.stringify(code));
+    const timeout = setTimeout(() => {
+      const hasCode = code.javascript?.trim() || code.java?.trim() || code.cpp?.trim();
+      if (hasCode) {
+        localStorage.setItem(`code_${problemId}`, JSON.stringify(code));
+      }
+    }, 300);
+    return () => clearTimeout(timeout);
   }, [code, problemId]);
 
+
   const handleRun = async () => {
-    setLoading(true); setRunResult(null);
+    
+    if(loading) return;
+    
+    setLoading(true); 
+    setRunResult(null);
     try {
       const res = await axiosClient.post(`/submission/run/${problemId}`, { code: code[selectedLanguage], language: selectedLanguage });
       setRunResult(res.data);
     } catch {
       setRunResult({ success: false, testCases: [], error: 'Internal server error' });
     }
-    setLoading(false); setActiveRightTab('testcase'); setMobilePanel('right');
+    setLoading(false); 
+    setActiveRightTab('testcase'); 
+    setMobilePanel('right');
   };
 
+
   const handleSubmitCode = async () => {
-    setLoading(true); setSubmitResult(null);
+    if(loading) return;
+
+    setLoading(true); 
+    setSubmitResult(null);
     try {
       const res = await axiosClient.post(`/submission/submit/${problemId}`, { code: code[selectedLanguage], language: selectedLanguage });
       setSubmitResult(res.data);
     } catch {
       setSubmitResult(null);
     }
-    setLoading(false); setActiveRightTab('result'); setMobilePanel('right');
+    setLoading(false); 
+    setActiveRightTab('result'); 
+    setMobilePanel('right');
   };
+
 
   const getMonacoLang = (lang) => ({ cpp: 'cpp', java: 'java', javascript: 'javascript' }[lang] || 'javascript');
   const langLabels = { javascript: 'JS', java: 'Java', cpp: 'C++' };
@@ -148,11 +195,14 @@ const ProblemPage = () => {
     { id: 'result',   label: 'Result',   icon: '◎'  },
   ];
 
+
   if (loading && !problem) return <PageLoader label="Loading problem…" />;
+
 
   return (
     <div className="prob-page">
       <style>{styles}</style>
+
 
       {/* Top bar */}
       <div style={{ height: '48px', background: 'var(--surface-1)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', padding: '0 16px', gap: '10px', flexShrink: 0, justifyContent: 'space-between' }}>
@@ -171,6 +221,7 @@ const ProblemPage = () => {
           </div>
         )}
       </div>
+
 
       {/* Mobile switcher */}
       <div className="mobile-switcher">
@@ -283,6 +334,7 @@ const ProblemPage = () => {
                     </button>
                   ))}
                 </div>
+                
                 <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Auto-saved</span>
               </div>
 
@@ -290,7 +342,7 @@ const ProblemPage = () => {
                 <Editor
                   height="100%"
                   language={getMonacoLang(selectedLanguage)}
-                  value={code[selectedLanguage] || ''}
+                  value={code[selectedLanguage] ?? defaultCode[selectedLanguage] ?? ''}
                   onChange={handleEditorChange}
                   onMount={(editor) => { editorRef.current = editor; }}
                   theme="vs-dark"
@@ -311,12 +363,20 @@ const ProblemPage = () => {
                   ⚡ Console
                 </button>
                 <div style={{ display: 'flex', gap: '8px' }}>
+
+                  <button onClick={handleResetCode}
+                  style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)',
+                  background: 'var(--surface-2)',border: '1px solid var(--border)',borderRadius: '7px',padding: '6px 14px', cursor: 'pointer'}}> ↺ Reset
+                  </button>
+
                   <button className="action-btn" onClick={handleRun} disabled={loading} style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: '7px', padding: '6px 18px', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.5 : 1, display: 'flex', alignItems: 'center', gap: '6px' }}>
                     {loading ? <span className="spinner" /> : '▷'} Run
                   </button>
+                  
                   <button className="action-btn" onClick={handleSubmitCode} disabled={loading} style={{ fontSize: '13px', fontWeight: 600, color: '#fff', background: 'var(--accent)', border: 'none', borderRadius: '7px', padding: '6px 20px', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, boxShadow: '0 2px 12px rgba(59,130,246,0.28)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     {loading ? <span className="spinner" /> : '↑'} Submit
                   </button>
+               
                 </div>
               </div>
             </div>
